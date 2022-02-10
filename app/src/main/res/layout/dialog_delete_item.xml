@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:maxWidth="240dp"
+    android:maxHeight="220dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:background="@color/md_blue_500"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:textSize="16dp"
+            android:textColor="@color/md_white_1000"
+            android:gravity="center_vertical"
+            android:id="@+id/dialog_title"
+            android:padding="8dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:textColor="@color/md_black_1000"
+        android:id="@+id/txt"
+        android:padding="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:minHeight="80dp"
+        android:layout_weight="1"/>
+
+    <View
+        android:background="@color/md_grey_300"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="54dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:textColor="@color/md_black_1000"
+            android:gravity="center"
+            android:id="@+id/btn_cancel"
+            android:padding="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_margin="8dp"
+            android:text="@string/cancel"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:textColor="@color/colorPrimary"
+            android:gravity="center"
+            android:id="@+id/btn_accept"
+            android:padding="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_margin="8dp"
+            android:text="@string/accept"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+</LinearLayout>

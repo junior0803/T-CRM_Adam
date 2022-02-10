@@ -1,6 +1,7 @@
 package com.bts.adamcrm.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.model.Customer;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -108,6 +111,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         intent.addCategory("android.intent.category.OPENABLE");
         intent.putExtra("android.intent.extra.LOCAL_ONLY", true);
         startActivityForResult(intent, FILE_SELECT_CODE);
+    }
+
+    public static void launch(Context context, Customer customer){
+        Intent intent = new Intent(context, CustomerDetailActivity.class);
+        intent.putExtra("customer", new Gson().toJson(customer));
+        context.startActivity(intent);
     }
 
     public static void launch(Activity activity){

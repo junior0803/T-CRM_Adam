@@ -96,5 +96,32 @@
     <string name="success_add">Added Successfully</string>
     <string name="logging">Logging in...</string>
     <string name="t_crm">T-CRM</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Accept</string>
+    <string name="reset_sms">Reset sms</string>
+    <string name="reset_sms_request">Are you sure you want to reset sms list ?</string>
+    <string name="load_data">Loading data ...</string>
+    <string name="sync_data">Syncing data ... </string>
+    <string name="file">File</string>
+    <string name="camera_or_image">Camera OR Image</string>
+    <string name="select_attach_file">Select what you want to attach!</string>
+    <string name="attach_file">Attach File</string>
+    <string name="enter_message">Enter Message ...</string>
+    <string name="send">Send</string>
+    <string name="delete_item">Delete item</string>
+    <string name="delete_attach_request">Are you sure you want to delete attachment</string>
+    <string name="small_close">close</string>
+    <string name="close">close</string>
+    <string name="select_status">Select Status</string>
+    <string name="select_start_date">Select Start Date</string>
+    <string name="select_end_date">Select End Date</string>
+    <string name="reset">Reset</string>
+    <string name="show">Show</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_period">Select\nPeriod</string>
+    <string name="reset_period">Reset\nPeriod</string>
+    <string name="reminder">Reminder</string>
+    <string name="all_categories">All Categories</string>
+
 
 </resources>

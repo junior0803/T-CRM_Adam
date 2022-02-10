@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:maxHeight="220dp"
+    android:minWidth="240dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:background="@color/md_blue_500"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/btn_close"
+            android:padding="12dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_action_close"/>
+
+        <TextView
+            android:textSize="16dp"
+            android:textColor="@color/md_white_1000"
+            android:gravity="center"
+            android:id="@+id/dialog_title"
+            android:padding="12dp"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:textAlignment="center"/>
+
+        <ImageView
+            android:padding="12dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textColor="@color/md_white_1000"
+                android:gravity="center"
+                android:id="@+id/btn_attach"
+                android:background="@drawable/btn_bg_2"
+                android:padding="8dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/attach_file"
+                android:layout_weight="1"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
+
+        <EditText
+            android:orientation="vertical"
+            android:id="@+id/edt_message"
+            android:background="@drawable/input_bg"
+            android:paddingStart="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:minHeight="80dp"
+            android:hint="@string/enter_message"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:textColor="@color/md_black_1000"
+            android:gravity="center"
+            android:id="@+id/btn_send"
+            android:background="@drawable/btn_bg"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/send"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+</LinearLayout>
