@@ -2,6 +2,7 @@ package com.bts.adamcrm.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.model.Category;
+import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +28,7 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
     String category_str = "";
     @BindView(R.id.edt_title)
     EditText edt_title;
+    Category category;
     ProgressDialog progressDialog;
     @BindView(R.id.title_text)
     TextView title_text;
@@ -33,12 +37,26 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
         activity.startActivity(new Intent(activity.getBaseContext(), AddCategoryActivity.class));
     }
 
+    public static void launch(Context context, Category category){
+        Intent intent = new Intent(context, AddCategoryActivity.class);
+        intent.putExtra("category", new Gson().toJson(category));
+        context.startActivity(intent);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_category);
         ButterKnife.bind(this);
-
+        if (getIntent() != null){
+            category_str = getIntent().getStringExtra("category");
+            if (category_str != null && !category_str.equals("")){
+                category = (Category) new Gson().fromJson(getIntent().getStringExtra("category"), Category.class);
+                edt_title.setText(category.getTitle());
+            }
+        }
+        progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
+        progressDialog.setTitle(R.string.create_category);
         title_text.setText(R.string.new_category);
         btn_add.setOnClickListener(this);
         btn_back.setOnClickListener(this);
@@ -53,6 +71,14 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
             case R.id.btn_add:
                 if (edt_title.getText().toString().equals("")){
                     showToast("Please enter a name!");
+                } else {
+                    if (category_str == null || category_str.equals("")){
+                        progressDialog.show();
+                        //category = new Category(edt_title.getText().toString(), )
+                    } else {
+                        progressDialog.show();
+
+                    }
                 }
                 // Add more
         }

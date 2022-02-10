@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
-
+import com.opensooq.supernova.gligar.GligarPicker;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -73,17 +73,19 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.btn_save:
-                sharedPreferencesManager.setStringValue("", logo_address1);
-                sharedPreferencesManager.setStringValue("", logo_address2);
-                sharedPreferencesManager.setStringValue("", edt_email.getText().toString());
-                sharedPreferencesManager.setStringValue("", edt_mobile.getText().toString());
-                sharedPreferencesManager.setStringValue("", edt_company.getText().toString());
+                sharedPreferencesManager.setStringValue("logo", logo_address1);
+                sharedPreferencesManager.setStringValue("logo2", logo_address2);
+                sharedPreferencesManager.setStringValue("email", edt_email.getText().toString());
+                sharedPreferencesManager.setStringValue("mobile", edt_mobile.getText().toString());
+                sharedPreferencesManager.setStringValue("address", edt_company.getText().toString());
                 exit();
                 break;
             case R.id.btn_select_logo:
                 logo_index = 1;
+                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
                 break;
             case R.id.btn_select_logo2:
+                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
                 logo_index = 2;
                 break;
             case R.id.btn_back:

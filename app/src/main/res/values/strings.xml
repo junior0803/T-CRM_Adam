@@ -122,6 +122,9 @@
     <string name="reset_period">Reset\nPeriod</string>
     <string name="reminder">Reminder</string>
     <string name="all_categories">All Categories</string>
+    <string name="create_category">Creating category ...</string>
+    <string name="load_category">Loading categories ... </string>
+    <string name="quantity">Quantity</string>
 
 
 </resources>
