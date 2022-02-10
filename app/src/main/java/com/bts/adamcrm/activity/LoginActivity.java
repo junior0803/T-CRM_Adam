@@ -30,6 +30,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     TextView name;
     ProgressDialog progressDialog;
 
+
     public static void launch(Activity activity) {
         activity.startActivity(new Intent(activity.getBaseContext(), LoginActivity.class));
     }
@@ -63,7 +64,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         this.progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
-        progressDialog.setTitle("Checking user login ...");
+        progressDialog.setTitle(R.string.login_check);
         progressDialog.show();
         this.btn_login.setOnClickListener(this);
         this.name.setOnClickListener(this);
@@ -74,18 +75,24 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         int id = view.getId();
         switch (id){
             case R.id.btn_login:
-                this.progressDialog.setTitle("Logging in...");
-                this.progressDialog.show();
-                Log.e("junior", "LoginActivity - btn_login");
-                login();
+                if (edt_password.getText().toString().equals("")
+                        || edt_username.getText().toString().equals(""))
+                    showToast(getString(R.string.invalid_input_userinfo));
+                else {
+                    this.progressDialog.setTitle(R.string.logging);
+                    this.progressDialog.show();
+                    Log.e("junior", "LoginActivity - btn_login");
+                    login();
+                }
                 break;
             case R.id.name:
                 int i = counter;
-                if (i < 10){
+                if (i < 5){
                     counter = i + 1;
                     return;
                 }
                 counter = 0;
+                RegisterActivity.launch(this);
             default:
 
         }

@@ -90,5 +90,11 @@
     <string name="view">View</string>
     <string name="edit">Edit</string>
     <string name="exit">exit</string>
+    <string name="login_check">Checking user login … </string>
+    <string name="invalid_input_userinfo">Please provide a valid login information!</string>
+    <string name="registering">Registering ... </string>
+    <string name="success_add">Added Successfully</string>
+    <string name="logging">Logging in...</string>
+    <string name="t_crm">T-CRM</string>
 
 </resources>

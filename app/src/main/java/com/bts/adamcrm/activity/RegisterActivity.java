@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,7 +39,7 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
         if (progressDialog != null && progressDialog.isShowing()){
             this.progressDialog.dismiss();
         }
-        showToast("Added Successfully");
+        showToast(getString(R.string.success_add));
     }
 
     @Override
@@ -46,11 +47,29 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
+        progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
+        progressDialog.setTitle(R.string.login_check);
+        progressDialog.show();
         this.btn_login.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
+        if (view.getId() == R.id.btn_login) {
+            if (edt_username.getText().toString().equals("")
+                    || edt_password.getText().toString().equals("")) {
+                showToast(getString(R.string.invalid_input_userinfo));
+            } else {
+                progressDialog.setTitle(R.string.registering);
+                progressDialog.show();
+                // Login
+                register();
+            }
+        }
+    }
 
+    private void register() {
+        Log.e(TAG, "createUserWithEmail:success");
+        updateUI();
     }
 }
