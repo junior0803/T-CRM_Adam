@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:gravity="right"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:textSize="12.0dip"
+            android:textColor="@color/md_white_1000"
+            android:id="@+id/txt_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="16.0dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/toolbar"
+        android:background="@color/colorPrimary"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="56.0dip">
+
+        <ImageView
+            android:id="@+id/toggle_button"
+            android:padding="16.0dip"
+            android:layout_width="56.0dip"
+            android:layout_height="56.0dip"
+            android:src="@drawable/ic_nav_burger" />
+
+        <TextView
+            android:textSize="16.0dip"
+            android:textColor="@color/md_white_1000"
+            android:gravity="center_vertical"
+            android:id="@+id/title_text"
+            android:layout_width="0.0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0" />
+
+        <ImageView
+            android:id="@+id/action_search"
+            android:padding="16.0dip"
+            android:layout_width="56.0dip"
+            android:layout_height="56.0dip"
+            android:src="@drawable/ic_action_search" />
+
+        <ImageView
+            android:id="@+id/action_add"
+            android:padding="16.0dip"
+            android:layout_width="56.0dip"
+            android:layout_height="56.0dip"
+            android:src="@drawable/ic_action_add" />
+
+        <LinearLayout
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_width="56.0dip"
+            android:layout_height="56.0dip">
+
+            <TextView
+                android:textColor="@color/md_white_1000"
+                android:gravity="center"
+                android:id="@+id/txt_online_count"
+                android:background="@drawable/badge_bg"
+                android:layout_width="24.0dip"
+                android:layout_height="24.0dip"
+                android:text="1" />
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
