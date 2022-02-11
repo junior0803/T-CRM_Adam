@@ -112,6 +112,7 @@
     <string name="delete_attach_request">Are you sure you want to delete attachment</string>
     <string name="small_close">close</string>
     <string name="close">close</string>
+    <string name="default_notification_channel_id">9998877</string>
     <string name="select_status">Select Status</string>
     <string name="select_start_date">Select Start Date</string>
     <string name="select_end_date">Select End Date</string>
@@ -125,6 +126,13 @@
     <string name="create_category">Creating category ...</string>
     <string name="load_category">Loading categories ... </string>
     <string name="quantity">Quantity</string>
+    <string name="sms_sent">SMS SENT</string>
+    <string name="sms_not_sent">SMS NOT SENT</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="edit_sms_state">Edit SMS State</string>
+    <string name="attach_selected">Attachment selected!</string>
+    <string name="save_item">Save item</string>
 
 
 </resources>

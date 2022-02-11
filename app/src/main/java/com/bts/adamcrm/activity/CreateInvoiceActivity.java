@@ -311,6 +311,6 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         }
     }
 
-    private void uploadFile(File logoFile2) {
+    private void uploadFile(File file) {
     }
 }

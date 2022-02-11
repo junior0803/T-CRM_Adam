@@ -1,28 +1,56 @@
 package com.bts.adamcrm.activity;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.FileUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.adapter.Attachment3Adapter;
+import com.bts.adamcrm.adapter.AttachmentAdapter;
+import com.bts.adamcrm.adapter.CategoryAdapter2;
+import com.bts.adamcrm.adapter.InvoiceAdapter;
+import com.bts.adamcrm.adapter.InvoiceAdapter2;
+import com.bts.adamcrm.model.Attachment;
+import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
+import com.bts.adamcrm.model.Invoice;
+import com.bts.adamcrm.receiver.AlarmReceiver;
+import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
+import com.opensooq.supernova.gligar.GligarPicker;
 
+import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -30,7 +58,7 @@ import butterknife.ButterKnife;
 public class CustomerDetailActivity extends BaseActivity implements View.OnClickListener {
     private static final int FILE_SELECT_CODE = 1111;
     private static final int PICKER_REQUEST_CODE = 2000;
-
+    AttachmentAdapter attachmentAdapter;
     @BindView(R.id.btn_add_invoice)
     Button btn_add_invoice;
     @BindView(R.id.btn_attach)
@@ -52,6 +80,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     private Calendar calendar;
     @BindView(R.id.chk_remind_me)
     CheckBox chk_remind_me;
+    List<Category> categoryList;
+    Customer customer;
     String customer_str;
     Uri downloadUri;
     @BindView(R.id.edt_address)
@@ -79,7 +109,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @BindView(R.id.edt_town)
     EditText edt_town;
     String fileName;
-    //List<Invoice> invoiceList = new ArrayList();
+    InvoiceAdapter invoiceAdapter;
+    List<Invoice> invoiceList = new ArrayList();
+    List<Attachment> attachmentList = new ArrayList<>();
     private int mDay;
     private int mHour;
     private int mMinute;
@@ -92,7 +124,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     RecyclerView recycler_invoices;
     boolean reminder = false;
     int selectedIndex = -1;
-
+    Category selected_category;
     boolean sms_sent = false;
     @BindView(R.id.spn_state)
     Spinner spn_state;
@@ -152,7 +184,120 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         txt_no_invoice.setVisibility(View.VISIBLE);
         recycler_attachments.setVisibility(View.GONE);
         txt_no_attachment.setVisibility(View.VISIBLE);
-
+        if (getIntent() != null){
+            customer_str = getIntent().getStringExtra("customer");
+            if (customer_str != null && !customer_str.equals("")){
+                customer = new Gson().fromJson(getIntent().getStringExtra("customer"), Customer.class);
+                edt_title.setText(customer.getTask_title());
+                edt_mobile.setText(customer.getMobile());
+                edt_mobile.setText(customer.getEmail());
+                edt_email.setText(customer.getEmail());
+                edt_name.setText(customer.getName());
+                edt_town.setText(customer.getTown());
+                edt_address.setText(customer.getAddress());
+                edt_post_code.setText(customer.getPostal_code());
+                edt_date_created.setText(customer.getDate_created());
+                edt_date_updated.setText(customer.getDate_updated());
+                edt_reminder_date.setText(customer.getReminder_date());
+                edt_further_none.setText(customer.getFurther_note());
+                selected_category = customer.getCategory();
+                if (selected_category != null){
+                    btn_category.setText("Select Category : " + this.selected_category.getTitle());
+                }
+                edt_reminder_date.setEnabled(false);
+                if (customer.getStatus() == 4){
+                    edt_reminder_date.setEnabled(true);
+                }
+                spn_state.setSelection(customer.getStatus());
+                edt_reminder_date.setText(customer.getReminder_date());
+                sms_sent = customer.isSms_sent();
+                reminder = customer.isReminder();
+                chk_remind_me.setChecked(reminder);
+                if (sms_sent){
+                    txt_sms_staus.setText(R.string.sms_sent);
+                    txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
+                } else {
+                    txt_sms_staus.setText(R.string.sms_not_sent);
+                    txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
+                }
+                if (customer.getAttachments() != null){
+                    attachmentList = customer.getAttachments();
+                    for (int i = 0; i < attachmentList.size(); i ++){
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                        getCurrentDate();
+                        try {
+                            Date date = simpleDateFormat.parse(attachmentList.get(i).getDate_delete());
+                            if (simpleDateFormat.parse(mDay + "/" + this.mMonth + "/" + this.mYear).getTime() >= date.getTime()){
+                                attachmentList.remove(i);
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (customer.getInvoices() != null){
+                    invoiceList = customer.getInvoices();
+                }
+            }
+        }
+        attachmentAdapter  = new AttachmentAdapter(attachmentList);
+        recycler_attachments.setAdapter(attachmentAdapter);
+        invoiceAdapter = new InvoiceAdapter(invoiceList);
+        recycler_invoices.setAdapter(invoiceAdapter);
+        if (attachmentList.size() == 0){
+            recycler_attachments.setVisibility(View.GONE);
+            txt_no_attachment.setVisibility(View.VISIBLE);
+        } else {
+            txt_no_attachment.setVisibility(View.GONE);
+            recycler_attachments.setVisibility(View.VISIBLE);
+        }
+        if (invoiceList.size() == 0){
+            recycler_invoices.setVisibility(View.GONE);
+            txt_no_invoice.setVisibility(View.VISIBLE);
+        } else {
+            txt_no_invoice.setVisibility(View.GONE);
+            recycler_invoices.setVisibility(View.VISIBLE);
+        }
+        recycler_attachments.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        clickAttachDelete(getBaseContext(), position);
+                    }
+                });
+                view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        clickAttachView(position);
+                    }
+                });
+                view.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        clickAttachEdit(getBaseContext(), position);
+                    }
+                });
+            }
+        }));
+        recycler_invoices.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        clickInvoiceDelete(getBaseContext(), position);
+                    }
+                });
+                view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        clickInvoiceView(position);
+                    }
+                });
+            }
+        }));
         title_text.setText(R.string.customer_detail);
         edt_reminder_date.setOnClickListener(this);
         btn_back.setOnClickListener(this);
@@ -167,10 +312,121 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         edt_date_attachment.setOnClickListener(this);
         btn_attach.setOnClickListener(this);
         btn_date.setOnClickListener(this);
+        chk_remind_me.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                reminder = b;
+                edt_reminder_date.setEnabled(b);
+            }
+        });
     }
 
-    public void showSelecterDialog(Activity activity) {
+    private void clickAttachDelete(Context context, int position) {
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_delete_item);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + this.attachmentList.get(position).getName() + " ?");
+        dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (attachmentList.size() > 0){
+                    attachmentList.remove(position);
+                    attachmentAdapter.updateAdapter(attachmentList);
+                    if (attachmentList.size() == 0){
+                        recycler_attachments.setVisibility(View.GONE);
+                        txt_no_attachment.setVisibility(View.VISIBLE);
+                    } else {
+                        txt_no_attachment.setVisibility(View.GONE);
+                        recycler_attachments.setVisibility(View.VISIBLE);
+                    }
+                    dialog.dismiss();
+                }
+            }
+        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
 
+    private void clickAttachView(int position){
+        Intent intent = new Intent("android.intent.action.VIEW");
+        intent.setData(Uri.parse(attachmentList.get(position).getUrl()));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    private void clickAttachEdit(Context context, int position){
+        EditAttachmentActivity.launch(this, new Gson().toJson(attachmentList.get(position)));
+    }
+
+    private void clickInvoiceDelete(Context context, int position){
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_delete_item);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete invoice " + this.invoiceList.get(position).getFile() + " ?");
+        dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (invoiceList.size() > 0){
+                    invoiceList.remove(position);
+                    invoiceAdapter.updateAdapter(invoiceList);
+                    if (invoiceList.size() == 0){
+                        recycler_invoices.setVisibility(View.GONE);
+                        txt_no_invoice.setVisibility(View.VISIBLE);
+                    } else {
+                        recycler_invoices.setVisibility(View.VISIBLE);
+                        txt_no_invoice.setVisibility(View.GONE);
+                    }
+                    dialog.dismiss();
+                }
+            }
+        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void clickInvoiceView(int position){
+        selectedIndex = position;
+        CreateInvoiceActivity.launch(this, new Gson().toJson(invoiceList.get(position)));
+    }
+
+    public void showSelectorDialog(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_selector);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
+        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // more implement
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     @Override
@@ -183,10 +439,568 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 if (edt_date_attachment.getText().toString().equals("")){
                     edt_date_attachment.setText(mDay + "/" + (mMonth + 1) + "/" + (mYear + 2));
                 }
-                showSelecterDialog(this);
+                showSelectorDialog(this);
+                break;
             case R.id.btn_back:
                 exit();
                 break;
+            case R.id.btn_category:
+                showCategoryDialog(this);
+                break;
+            case R.id.btn_date:
+                appendDateTime();
+                break;
+            case R.id.btn_delete:
+                if (customer != null)
+                    deleteItem(this, customer);
+                break;
+            case R.id.btn_save:
+                if (edt_title.getText().toString().equals("") || edt_mobile.getText().toString().equals("")){
+                    showToast("Please Enter Title and mobile number and category for this customers data!");
+                } else if (spn_state.getSelectedItemPosition() == 0){
+                    showToast("Please Select a proper state!");
+                } else {
+                    saveCustomer(this, true);
+                }
+                break;
+            case R.id.btn_send_email:
+                if (!edt_email.getText().toString().equals("") || customer != null && customer.getEmail() != null){
+                    showSendEmailDialog(this);
+                } else {
+                    showToast("Please enter an email address!");
+                }
+                break;
+            case R.id.btn_send_sms:
+                if (!edt_mobile.getText().toString().equals("") || customer != null && customer.getMobile() != null){
+                    showSendSMSDialog(this);
+                } else {
+                    showToast("Please enter a mobile number!");
+                }
+                break;
+            case R.id.edt_date_attachment:
+                showAttachmentDateTimeDialog();
+                break;
+            case R.id.edt_date_created:
+                showDateTimeDialog();
+                break;
+            case R.id.edt_reminder_date:
+                showReminderDialog();
+                break;
+            case R.id.txt_sms_staus:
+                showResetSMSDialog(this);
         }
+    }
+
+    private void showResetSMSDialog(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_reset_sms);
+        ImageView btnClose = dialog.findViewById(R.id.btn_close);
+        TextView txtMsg = dialog.findViewById(R.id.txt_msg);
+        TextView btnNo = dialog.findViewById(R.id.btn_no);
+        TextView btnYes = dialog.findViewById(R.id.btn_yes);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.edit_sms_state);
+        if (sms_sent){
+            txtMsg.setText("Dou you want to set sms state to not sent?");
+        } else {
+            txtMsg.setText("Dou you want to set sms state to sent?");
+        }
+        btnYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (sms_sent){
+                    txt_sms_staus.setText(R.string.sms_not_sent);
+                    txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
+                } else {
+                    txt_sms_staus.setText(R.string.sms_sent);
+                    txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
+                }
+                sms_sent = !sms_sent;
+                dialog.dismiss();
+            }
+        });
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        btnNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void showReminderDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                mYear = i;
+                mMonth = i1 + 1;
+                mDay = i2;
+                edt_reminder_date.setText(mDay + "/" + mMonth + "/" + mYear);
+                showReminderTimeDialog();
+            }
+        }, mYear, mMonth, mDay).show();
+    }
+
+    private void showReminderTimeDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
+            }
+        }, mHour, mMinute, true).show();
+    }
+
+    private void showDateTimeDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                mYear = i;
+                mMonth = i1 + 1;
+                mDay = i2;
+                edt_date_created.setText(mDay + "/" + mMonth + "/" + mYear);
+            }
+        }, mYear, mMonth, mDay).show();
+    }
+
+    private void showAttachmentDateTimeDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                mYear = i;
+                mMonth = i1 + 1;
+                mDay = i2;
+                edt_date_attachment.setText(mDay + "/" + mMonth + "/" + mYear);
+            }
+        }, mYear, mMonth, mDay).show();
+    }
+
+    private void showSendSMSDialog(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_send_sms);
+        EditText editText = dialog.findViewById(R.id.edt_message);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.send_sms);
+        dialog.findViewById(R.id.btn_attach).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showSelectAttachments(activity);
+            }
+        });
+        dialog.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editText.append("\n\n");
+                if (selected_category == null){
+                    showToast("Please select a category first");
+                    return;
+                }
+                if (downloadUri != null)
+                    editText.append(downloadUri.toString());
+                sendSMS(editText.getText().toString(), dialog);
+            }
+        });
+        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+
+    }
+
+    private void sendSMS(String string, Dialog dialog) {
+        String strNumber;
+        if (customer.getMobile() != null){
+            strNumber = customer.getMobile();
+        } else {
+            strNumber = edt_mobile.getText().toString();
+        }
+        sms_sent = true;
+        txt_sms_staus.setText(R.string.sms_sent);
+        txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
+        try {
+            Log.i("Dimo", strNumber);
+            Intent intent = new Intent("android.intent.action.VIEW");
+            intent.putExtra("address", strNumber);
+            intent.putExtra("sms_body", string);
+            intent.setType("vnd.android-dir/mms-sms");
+            startActivity(intent);
+        } catch (Exception e){
+            e.printStackTrace();
+            showToast("No sms app found");
+        }
+        dialog.dismiss();
+    }
+
+    private void showSelectAttachments(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_attachments2);
+        RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
+        RecyclerView recyclerView2 = dialog.findViewById(R.id.recycler2);
+        Attachment3Adapter attachment3Adapter = new Attachment3Adapter(attachmentList);
+        InvoiceAdapter2 invoiceAdapter2 = new InvoiceAdapter2(invoiceList);
+        recyclerView.setAdapter(attachment3Adapter);
+        recyclerView2.setAdapter(invoiceAdapter2);
+        recyclerView.setVisibility(View.VISIBLE);
+        recyclerView2.setVisibility(View.VISIBLE);
+
+        if (attachmentList.size() == 0)
+            recyclerView.setVisibility(View.GONE);
+        if (invoiceList.size() == 0)
+            recyclerView2.setVisibility(View.GONE);
+
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent("android.intent.action.VIEW");
+                        intent.setData(Uri.parse(attachmentList.get(position).getUrl()));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(intent);
+                    }
+                });
+                view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        downloadUri = Uri.parse(attachmentList.get(position).getUrl());
+                        showToast("Attachment selected!");
+                        dialog.dismiss();
+                    }
+                });
+            }
+        }));
+        recyclerView2.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent("android.intent.action.VIEW");
+                        intent.setData(Uri.parse(invoiceList.get(position).getFile()));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(intent);
+                    }
+                });
+                view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (invoiceList.get(position).getFile() == null
+                                || invoiceList.get(position).getFile().equals("")){
+                            showToast("Please create invoice file first");
+                        } else {
+                            downloadUri = Uri.parse(invoiceList.get(position).getFile());
+                            showToast("Attachment selected!");
+                        }
+                        dialog.dismiss();
+                    }
+                });
+            }
+        }));
+        dialog.show();
+    }
+
+    private void showSendEmailDialog(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_send_sms);
+        EditText editText = dialog.findViewById(R.id.edt_message);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.send_email);
+        dialog.findViewById(R.id.btn_attach).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showSelectAttachments(activity);
+            }
+        });
+        dialog.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editText.append("\n\n");
+                if (selected_category == null){
+                    showToast("Please select a category first");
+                    return;
+                }
+                Log.i("junior", customer.getMobile());
+                Log.i("junior", edt_email.getText().toString());
+                if (downloadUri != null)
+                    editText.append(downloadUri.toString());
+                sendEmail(editText.getText().toString(), dialog);
+            }
+        });
+        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void sendEmail(String strMsg, Dialog dialog) {
+        String strNumber;
+        if (customer.getEmail() != null)
+            strNumber = customer.getEmail();
+        else
+            strNumber = edt_email.getText().toString();
+        Intent intent = new Intent("android.intent.action.SEND");
+        intent.putExtra("android.intent.extra.EMAIL", new String[]{strNumber});
+        intent.putExtra("android.intent.extra.TEXT", strMsg);
+        intent.setType("message/rfc822");
+        startActivity(Intent.createChooser(intent, "Choose an Email client :"));
+        dialog.dismiss();
+    }
+
+    private void saveCustomer(Activity activity, boolean b) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_delete_item);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.save_item);
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to save customer ?");
+        dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveOrUpdate(b, dialog);
+            }
+        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void saveOrUpdate(boolean b, Dialog dialog) {
+        if (customer == null || customer.getMobile().equals("")){
+            customer = new Customer();
+            customer.setSort(-1);
+            customer.setTask_title(edt_title.getText().toString());
+            customer.setMobile(edt_mobile.getText().toString());
+            customer.setEmail(edt_email.getText().toString());
+            customer.setName(edt_name.getText().toString());
+            customer.setAddress(edt_address.getText().toString());
+            customer.setTown(edt_town.getText().toString());
+            customer.setPostal_code(edt_post_code.getText().toString());
+            customer.setFurther_note(edt_further_none.getText().toString());
+            customer.setCategory(selected_category);
+            customer.setSms_sent(sms_sent);
+            customer.setReminder(reminder);
+            customer.setStatus(spn_state.getSelectedItemPosition());
+            if (reminder) {
+                customer.setReminder_date(edt_reminder_date.getText().toString());
+                getDateAndSetupAlarm(edt_reminder_date.getText().toString());
+            } else {
+                customer.setReminder_date("");
+            }
+            calendar = Calendar.getInstance();
+            mYear = calendar.get(1);
+            mMonth = calendar.get(2) + 1;
+            mDay = calendar.get(5);
+            if (spn_state.getSelectedItemPosition() == 2){
+                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
+            } else {
+                customer.setDate_completed("");
+            }
+            customer.setDate_updated(mDay + "/" + mMonth + "/" + mYear);
+            if (!edt_date_created.getText().toString().equals("")){
+                customer.setDate_created(edt_date_created.getText().toString());
+            } else {
+                customer.setDate_created(mDay + "/" + mMonth + "/" + mYear);
+            }
+            customer.setAttachments(attachmentList);
+            customer.setInvoices(invoiceList);
+
+            // more implement...
+
+        } else {
+            customer.setTask_title(edt_title.getText().toString());
+            customer.setMobile(edt_mobile.getText().toString());
+            customer.setEmail(edt_email.getText().toString());
+            customer.setName(edt_name.getText().toString());
+            customer.setAddress(edt_address.getText().toString());
+            customer.setTown(edt_town.getText().toString());
+            customer.setPostal_code(edt_post_code.getText().toString());
+            customer.setDate_created(edt_date_created.getText().toString());
+            customer.setFurther_note(edt_further_none.getText().toString());
+            customer.setCategory(selected_category);
+            customer.setSms_sent(sms_sent);
+            customer.setReminder(reminder);
+            customer.setStatus(spn_state.getSelectedItemPosition());
+            if (reminder) {
+                customer.setReminder_date(edt_reminder_date.getText().toString());
+                getDateAndSetupAlarm(edt_reminder_date.getText().toString());
+            } else {
+                customer.setReminder_date("");
+            }
+            calendar = Calendar.getInstance();
+            mYear = calendar.get(1);
+            mMonth = calendar.get(2) + 1;
+            mDay = calendar.get(5);
+            if (spn_state.getSelectedItemPosition() == 2){
+                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
+            } else {
+                customer.setDate_completed("");
+            }
+            customer.setAttachments(attachmentList);
+            customer.setInvoices(invoiceList);
+            // more implement
+        }
+    }
+
+    private void getDateAndSetupAlarm(String strDate) {
+        try {
+            if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(strDate).getTime() >= new Date().getTime()){
+                Date date = new Date();
+                date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(strDate);
+                setupAlarm(date.getTime());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupAlarm(long time) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, AlarmReceiver.class), 0);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+    }
+
+    private void deleteItem(Activity activity, Customer customer) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_delete_item);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete customer " + customer.getTask_title() + " ?");
+        dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // more implement
+                showToast("deleteItem more implement");
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void appendDateTime() {
+        edt_further_none.append(" " + getDateTime());
+    }
+
+    private String getDateTime() {
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date());
+    }
+
+    private void showCategoryDialog(Activity activity) {
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_category);
+        RecyclerView recyclerView = dialog.findViewById(R.id.recycler_category);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_category);
+        categoryList = new ArrayList<>();
+        CategoryAdapter2 categoryAdapter2 = new CategoryAdapter2(categoryList);
+        recyclerView.setAdapter(categoryAdapter2);
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                selected_category = categoryList.get(position);
+                btn_category.setText("Select Category : " + selected_category.getTitle());
+                dialog.dismiss();
+            }
+        }));
+        // more implement ...
+
+        ((TextView) dialog.findViewById(R.id.btn_cancel)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == -1){
+            if (requestCode == FILE_SELECT_CODE){
+                uploadFile();
+            } else if (requestCode == PICKER_REQUEST_CODE){
+                String[] strArr = data.getExtras().getStringArray("images");
+                if (strArr.length > 0 && strArr[0] != null){
+                    uploadFile();
+                }
+            } else if (requestCode == 5000){
+                String strAttach = data.getExtras().getString("attachment");
+                boolean z = data.getExtras().getBoolean("update");
+                Attachment attachment = new Gson().fromJson(strAttach, Attachment.class);
+                if (z && selectedIndex > -1){
+                    attachmentList.remove(selectedIndex);
+                    selectedIndex = -1;
+                }
+                attachmentList.add(attachment);
+                attachmentAdapter.updateAdapter(attachmentList);
+                if (attachmentList.size() == 0){
+                    recycler_attachments.setVisibility(View.GONE);
+                    txt_no_attachment.setVisibility(View.VISIBLE);
+                } else {
+                    recycler_attachments.setVisibility(View.VISIBLE);
+                    txt_no_attachment.setVisibility(View.GONE);
+                }
+            } else if (requestCode == 9000){
+                String strInvoice = data.getExtras().getString("invoice");
+                boolean z = data.getExtras().getBoolean("update");
+                Invoice invoice = new Gson().fromJson(strInvoice, Invoice.class);
+                if (z && selectedIndex > -1){
+                    invoiceList.remove(selectedIndex);
+                    selectedIndex = -1;
+                } else {
+                    invoiceList.add(invoice);
+                    invoiceAdapter.updateAdapter(invoiceList);
+                    if (invoiceList.size() == 0){
+                        recycler_invoices.setVisibility(View.GONE);
+                        txt_no_invoice.setVisibility(View.VISIBLE);
+                    } else {
+                        recycler_invoices.setVisibility(View.VISIBLE);
+                        txt_no_invoice.setVisibility(View.GONE);
+                    }
+                }
+            }
+        }
+    }
+
+    private void uploadFile() {
+        showToast("upload File more implement");
     }
 }
