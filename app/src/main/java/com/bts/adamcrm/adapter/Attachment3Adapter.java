@@ -14,8 +14,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import butterknife.internal.Utils;
 
 public class Attachment3Adapter extends RecyclerView.Adapter<Attachment3Adapter.ViewHolder> {
     private List<Attachment> attachmentList;
@@ -53,7 +51,7 @@ public class Attachment3Adapter extends RecyclerView.Adapter<Attachment3Adapter.
         viewHolder.txt_name.setText(this.attachmentList.get(i).getName());
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+    @Override
     public int getItemCount() {
         return this.attachmentList.size();
     }
