@@ -133,6 +133,10 @@
     <string name="edit_sms_state">Edit SMS State</string>
     <string name="attach_selected">Attachment selected!</string>
     <string name="save_item">Save item</string>
+    <string name="str_pno">PNO</string>
+    <string name="minimum_quantity">Minimum Quantity</string>
+    <string name="edit_part">Edit Part</string>
+    <string name="add_part">Add Part</string>
 
 
 </resources>

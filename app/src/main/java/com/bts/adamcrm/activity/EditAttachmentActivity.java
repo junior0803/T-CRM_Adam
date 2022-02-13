@@ -1,15 +1,19 @@
 package com.bts.adamcrm.activity;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.model.Attachment;
+import com.google.gson.Gson;
 
 import java.util.Calendar;
 
@@ -17,8 +21,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class EditAttachmentActivity extends BaseActivity implements View.OnClickListener {
-
-
+    Attachment attachment;
     @BindView(R.id.btn_back)
     ImageView btn_back;
     @BindView(R.id.btn_save)
@@ -46,7 +49,7 @@ public class EditAttachmentActivity extends BaseActivity implements View.OnClick
         ButterKnife.bind(this);
         title_text.setText(R.string.edit_attach);
         str_attachment = getIntent().getStringExtra("str_attachment");
-
+        attachment = new Gson().fromJson(str_attachment, Attachment.class);
         btn_back.setOnClickListener(this);
         btn_save.setOnClickListener(this);
         edt_date.setOnClickListener(this);
@@ -68,9 +71,36 @@ public class EditAttachmentActivity extends BaseActivity implements View.OnClick
                 exit();
                 break;
             case R.id.btn_save:
+                save();
                 break;
             case R.id.edt_date:
+                showAttachmentDateTimeDialog();
 
         }
+    }
+
+    private void save() {
+        attachment.setDate_delete(edt_date.getText().toString());
+        Intent intent = new Intent();
+        intent.putExtra("attachment", new Gson().toJson(attachment));
+        intent.putExtra("update", true);
+        setResult(-1, intent);
+        finish();
+    }
+
+    private void showAttachmentDateTimeDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                mYear = i;
+                mMonth = i1 + 1;
+                mDay = i2;
+                edt_date.setText(mDay + "/" + mMonth + "/" + mYear);
+            }
+        }, mYear, mMonth, mDay).show();
     }
 }
