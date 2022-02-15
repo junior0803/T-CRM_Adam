@@ -24,7 +24,6 @@ import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.InvoiceItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
-import com.gun0912.tedpermission.coroutine.TedPermission;
 import com.opensooq.supernova.gligar.GligarPicker;
 
 import org.w3c.dom.Text;
@@ -91,7 +90,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     public static void launch(Activity activity, String str){
         Intent intent = new Intent(activity.getBaseContext(), CreateInvoiceActivity.class);
         intent.putExtra("str_invoice", str);
-        activity.startActivityForResult(intent, 9000);
+        activity.startActivityForResult(intent, INVOICE_REQUEST_CODE);
     }
 
     @Override
@@ -252,6 +251,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 dialog.dismiss();
             }
         });
+        dialog.show();
     }
 
     private void save() {
@@ -283,18 +283,15 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         invoice.setComment(edt_comment.getText().toString());
         Intent intent = new Intent();
         intent.putExtra("invoice", new Gson().toJson(invoice));
-        if (str_invoice.equals(""))
-            intent.putExtra("update", false);
-        else 
-            intent.putExtra("update", true);
-        setResult(-1, intent);
+        intent.putExtra("update", !str_invoice.equals(""));
+        setResult(RESULT_OK, intent);
         finish();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == -1 && requestCode == PICKER_REQUEST_CODE){
+        if (resultCode == RESULT_OK && requestCode == PICKER_REQUEST_CODE){
             if (data != null) {
                 String[] stringArray = data.getExtras().getStringArray("images");
                 if (stringArray.length > 0 && stringArray[0] != null){
@@ -312,5 +309,6 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void uploadFile(File file) {
+        showToast("upload file name: " + file.getName());
     }
 }

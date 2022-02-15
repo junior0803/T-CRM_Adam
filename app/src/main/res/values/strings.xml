@@ -137,6 +137,11 @@
     <string name="minimum_quantity">Minimum Quantity</string>
     <string name="edit_part">Edit Part</string>
     <string name="add_part">Add Part</string>
-
+    <string name="active">Active</string>
+    <string name="attach">Attach</string>
+    <string name="you_have_reminders">You Have Reminders</string>
+    <string name="search_here">Search here ...</string>
+    <string name="permission_check_message">"If you reject permission,you can not attach file\n\nPlease turn on permissions at [Setting] > [Permission]"</string>
+    <string name="attach_document">Attach Document</string>
 
 </resources>

@@ -314,7 +314,14 @@
                     android:maxLines="1"
                     android:singleLine="true"
                     android:layout_weight="1"/>
-                <Button android:textColor="@color/md_white_1000" android:id="@+id/btn_attach" android:background="@drawable/btn_bg_4" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Attach Document" android:layout_weight="1"/>
+                <Button
+                    android:textColor="@color/md_white_1000"
+                    android:id="@+id/btn_attach"
+                    android:background="@drawable/btn_bg_4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/attach_document"
+                    android:layout_weight="1"/>
             </LinearLayout>
             <TextView
                 android:textSize="16dp"

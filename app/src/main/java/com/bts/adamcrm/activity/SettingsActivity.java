@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
 import com.opensooq.supernova.gligar.GligarPicker;
@@ -18,7 +20,6 @@ import butterknife.ButterKnife;
 
 public class SettingsActivity extends BaseActivity implements View.OnClickListener {
 
-    final int PICKER_REQUEST_CODE = 5000;
     @BindView(R.id.btn_back)
     ImageView btn_back;
     @BindView(R.id.btn_save)
@@ -67,6 +68,23 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
         edt_email.setText(sharedPreferencesManager.getStringValue("email"));
         edt_mobile.setText(sharedPreferencesManager.getStringValue("mobile"));
         edt_company.setText(sharedPreferencesManager.getStringValue("address"));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == PICKER_REQUEST_CODE){
+            String [] images = data.getExtras().getStringArray("images");
+            if (images.length > 0 && images[0] != null) {
+                if (logo_index == 1) {
+                    logo_address1 = images[0];
+                    btn_select_logo.setImageDrawable(Drawable.createFromPath(images[0]));
+                } else {
+                    logo_address2 = images[0];
+                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(images[0]));
+                }
+            }
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.bts.adamcrm.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
@@ -10,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.FileUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,7 +25,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.BaseActivity;
@@ -42,6 +41,8 @@ import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.normal.TedPermission;
 import com.opensooq.supernova.gligar.GligarPicker;
 
 import java.io.File;
@@ -57,7 +58,7 @@ import butterknife.ButterKnife;
 
 public class CustomerDetailActivity extends BaseActivity implements View.OnClickListener {
     private static final int FILE_SELECT_CODE = 1111;
-    private static final int PICKER_REQUEST_CODE = 2000;
+    private static final int REPICKER_REQUEST_CODE = 2000;
     AttachmentAdapter attachmentAdapter;
     @BindView(R.id.btn_add_invoice)
     Button btn_add_invoice;
@@ -136,6 +137,18 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     TextView txt_no_invoice;
     @BindView(R.id.txt_sms_staus)
     TextView txt_sms_staus;
+
+    PermissionListener permissionListener = new PermissionListener() {
+        @Override
+        public void onPermissionGranted() {
+            showFileChooser();
+        }
+
+        @Override
+        public void onPermissionDenied(List<String> deniedPermissions) {
+            showToast("Permission Denied\n" + deniedPermissions.toString());
+        }
+    };
 
     public void showFileChooser(){
         Intent intent = new Intent("android.intent.action.GET_CONTENT");
@@ -416,13 +429,18 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             @Override
             public void onClick(View view) {
                 // more implement
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
                 dialog.dismiss();
             }
         });
         dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
+                new GligarPicker().requestCode(REPICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
                 dialog.dismiss();
             }
         });
@@ -437,7 +455,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 break;
             case R.id.btn_attach:
                 if (edt_date_attachment.getText().toString().equals("")){
-                    edt_date_attachment.setText(mDay + "/" + (mMonth + 1) + "/" + (mYear + 2));
+                    edt_date_attachment.setText(mDay + "/" + (mMonth + 1) + "/" + (mYear));
                 }
                 showSelectorDialog(this);
                 break;
@@ -953,15 +971,15 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == -1){
+        if (resultCode == RESULT_OK){
             if (requestCode == FILE_SELECT_CODE){
-                uploadFile();
-            } else if (requestCode == PICKER_REQUEST_CODE){
+                uploadFile(new File(""));
+            } else if (requestCode == REPICKER_REQUEST_CODE){
                 String[] strArr = data.getExtras().getStringArray("images");
                 if (strArr.length > 0 && strArr[0] != null){
-                    uploadFile();
+                    uploadFile(new File(strArr[0]));
                 }
-            } else if (requestCode == 5000){
+            } else if (requestCode == PICKER_REQUEST_CODE){
                 String strAttach = data.getExtras().getString("attachment");
                 boolean z = data.getExtras().getBoolean("update");
                 Attachment attachment = new Gson().fromJson(strAttach, Attachment.class);
@@ -978,7 +996,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     recycler_attachments.setVisibility(View.VISIBLE);
                     txt_no_attachment.setVisibility(View.GONE);
                 }
-            } else if (requestCode == 9000){
+            } else if (requestCode == INVOICE_REQUEST_CODE){
                 String strInvoice = data.getExtras().getString("invoice");
                 boolean z = data.getExtras().getBoolean("update");
                 Invoice invoice = new Gson().fromJson(strInvoice, Invoice.class);
@@ -1000,7 +1018,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private void uploadFile() {
-        showToast("upload File more implement");
+    private void uploadFile(File file) {
+        showToast("upload File :" + file.getName());
     }
 }

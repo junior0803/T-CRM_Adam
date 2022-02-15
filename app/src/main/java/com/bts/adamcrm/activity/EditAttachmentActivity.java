@@ -84,7 +84,7 @@ public class EditAttachmentActivity extends BaseActivity implements View.OnClick
         Intent intent = new Intent();
         intent.putExtra("attachment", new Gson().toJson(attachment));
         intent.putExtra("update", true);
-        setResult(-1, intent);
+        setResult(RESULT_OK, intent);
         finish();
     }
 

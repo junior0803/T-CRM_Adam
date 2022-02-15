@@ -1,5 +1,6 @@
 package com.bts.adamcrm.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -25,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,9 +45,11 @@ import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.bts.adamcrm.util.SharedPreferencesManager;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.normal.TedPermission;
+import com.opensooq.supernova.gligar.GligarPicker;
 
-import org.w3c.dom.Text;
-
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,8 +62,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener, OnStartDragListener {
-    final int FILE_SELECT_CODE = R.color.md_cyan_600;
-    final int PICKER_REQUEST_CODE = 5000;
 
     @BindView(R.id.action_add)
     ImageView action_add;
@@ -106,6 +108,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @BindView(R.id.spn_category)
     Spinner spn_category;
     List<String> statusList = new ArrayList<>();
+
+    PermissionListener permissionListener = new PermissionListener() {
+        @Override
+        public void onPermissionGranted() {
+            showFileChooser();
+        }
+
+        @Override
+        public void onPermissionDenied(List<String> deniedPermissions) {
+            Toast.makeText(getBaseContext(), "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    PermissionListener permissionListener2;
+
     String str_reminder = "";
     List<String> taskTypes = new ArrayList<>();
     Uri downloadUri;
@@ -135,13 +152,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         activity.startActivity(new Intent(activity.getBaseContext(), MainActivity.class));
     }
 
+    private void showFileChooser() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        startActivityForResult(intent, FILE_SELECT_CODE);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         loadingProgress = new ProgressDialog(this);
-        this.sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
+        sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
 
         Intent intent = new Intent();
         String pkgName = getPackageName();
@@ -150,7 +175,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             intent.setData(Uri.parse("package:" + pkgName));
             startActivity(intent);
         }
-        this.statusList  = new ArrayList<>();
+        statusList  = new ArrayList<>();
         statusList.add("Show All");
         statusList.add("Show Active");
         statusList.add("Show Completed");
@@ -168,20 +193,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         loadAllData();
         updateActiveDevices();
         // Ui component init
-        this.toggle_button.setOnClickListener(this);
-        this.txt_online_count.setOnClickListener(this);
-        this.action_add.setOnClickListener(this);
-        this.action_search.setOnClickListener(this);
-        this.btn_attach_main.setOnClickListener(this);
-        this.btn_send_sms.setOnClickListener(this);
-        this.btn_reset_sms.setOnClickListener(this);
-        this.btn_select_period.setOnClickListener(this);
-        this.btn_reminder.setOnClickListener(this);
-        this.btn_sync.setOnClickListener(this);
-        this.title_text.setText("Home");
+        toggle_button.setOnClickListener(this);
+        txt_online_count.setOnClickListener(this);
+        action_add.setOnClickListener(this);
+        action_search.setOnClickListener(this);
+        btn_attach_main.setOnClickListener(this);
+        btn_send_sms.setOnClickListener(this);
+        btn_reset_sms.setOnClickListener(this);
+        btn_select_period.setOnClickListener(this);
+        btn_reminder.setOnClickListener(this);
+        btn_sync.setOnClickListener(this);
+        title_text.setText("Home");
 
         generateMenu();
-        this.menu_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(),
+        menu_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(),
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
@@ -202,6 +227,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         });
         // Permission more implement
 
+        permissionListener2 = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                showToast("Permission Granted!");
+            }
+
+            @Override
+            public void onPermissionDenied(List<String> deniedPermissions) {
+                showToast("Permission Denied");
+            }
+        };
+        
+        TedPermission.create()
+                .setPermissionListener(permissionListener2)
+                .setDeniedMessage(R.string.permission_check_message)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+        
         mItemTouchHelper = new ItemTouchHelper(new SimpleItemTouchHelperCallback(customerAdapter));
         mItemTouchHelper.attachToRecyclerView(tasks_recycler);
 
@@ -259,9 +302,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 }
             }
             customerAdapter.updateAdapter(visibleList);
-            txt_count.setText("Count : " + this.visibleList.size());
+            txt_count.setText("Count : " + visibleList.size());
         }
-    }
+        }
 
     private void setupCurrentDate() {
         txt_date.setText(new SimpleDateFormat("dd/MM/yyyy",
@@ -313,25 +356,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     public void generateMenu() {
-        NavAdapter navAdapter = new NavAdapter(this.navList);
-        this.navAdapter = navAdapter;
-        this.menu_recycler.setAdapter(navAdapter);
-        this.navList = new ArrayList<>();
-        this.navList.add(new Nav("Home", R.drawable.ic_nav_home));
-        this.navList.add(new Nav("Category List", R.drawable.ic_nav_add_category));
-        this.navList.add(new Nav("Parts List 1", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Shopping List 1", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Parts List 2", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Shopping List 2", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Parts List 3", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Shopping List 3", R.drawable.ic_stock_list));
-        this.navList.add(new Nav("Settings", R.drawable.ic_action_setting));
-        this.navList.add(new Nav("Logout", R.drawable.ic_action_exit));
-        this.navAdapter.updateAdapter(this.navList);
+        navAdapter = new NavAdapter(navList);
+        menu_recycler.setAdapter(navAdapter);
+        navList = new ArrayList<>();
+        navList.add(new Nav("Home", R.drawable.ic_nav_home));
+        navList.add(new Nav("Category List", R.drawable.ic_nav_add_category));
+        navList.add(new Nav("Parts List 1", R.drawable.ic_stock_list));
+        navList.add(new Nav("Shopping List 1", R.drawable.ic_stock_list));
+        navList.add(new Nav("Parts List 2", R.drawable.ic_stock_list));
+        navList.add(new Nav("Shopping List 2", R.drawable.ic_stock_list));
+        navList.add(new Nav("Parts List 3", R.drawable.ic_stock_list));
+        navList.add(new Nav("Shopping List 3", R.drawable.ic_stock_list));
+        navList.add(new Nav("Settings", R.drawable.ic_action_setting));
+        navList.add(new Nav("Logout", R.drawable.ic_action_exit));
+        navAdapter.updateAdapter(navList);
     }
 
     private void handleMenu(int i) {
-        this.drawerLayout.closeDrawer(Gravity.LEFT);
+        drawerLayout.closeDrawer(Gravity.LEFT);
         if (i != 0) {
             if (i == 1) {
                 CategoryActivity.launch(this);
@@ -385,7 +427,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 }
                 break;
             case R.id.btn_attach_main:
-                showSelecterDialog(this);
+                showSelectorDialog(this);
                 break;
             case R.id.btn_send_sms:
                 showSendSMSDialog(this);
@@ -534,7 +576,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         });
     }
 
-    public void showSelecterDialog(Activity activity) {
+    public void showSelectorDialog(Activity activity) {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_selector);
@@ -548,13 +590,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // more implement
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
+                dialog.dismiss();
             }
         });
         dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // more implement
+                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
+                dialog.dismiss();
             }
         });
         dialog.show();
@@ -585,7 +634,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private void setStateItem(Dialog dialog, int position) {
         selectedState = position;
         btn_select_state.setText(statusList.get(position).replace("Show", ""));
-        SharedPreferencesManager sharedPreferencesManager = this.sharedPreferencesManager;
         sharedPreferencesManager.setStringValue("last_status", position + "");
         loadAllData();
         dialog.dismiss();
@@ -678,7 +726,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 showEndDateTimeDialog();
             }
         });
-        dialog.dismiss();
+        dialog.show();
     }
 
 
@@ -744,5 +792,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
         mItemTouchHelper.startDrag(viewHolder);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK){
+            if (requestCode == FILE_SELECT_CODE){
+                uploadFile(new File(""));
+            } else if (requestCode == PICKER_REQUEST_CODE){
+                String[] strings = data.getExtras().getStringArray("images");
+                System.currentTimeMillis();
+                uploadFile(new File(strings[0]));
+            }
+        }
+    }
+
+    private void uploadFile(File file) {
+        showToast("File upload : " + file.getName());
     }
 }

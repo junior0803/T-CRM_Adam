@@ -54,7 +54,4 @@ dependencies {
     implementation 'com.opensooq.supernova:gligar:1.1.0'
     // tedpremission
     implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
-    implementation 'io.github.ParkSangGwon:tedpermission-coroutine:3.3.0'
-    implementation 'io.github.ParkSangGwon:tedpermission-rx2:3.3.0'
-    implementation 'io.github.ParkSangGwon:tedpermission-rx3:3.3.0'
 }

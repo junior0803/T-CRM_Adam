@@ -19,53 +19,53 @@
         android:layout_weight="1.0">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:gravity="center"
-                android:orientation="horizontal"
                 android:id="@+id/search_wrapper"
-                android:background="@drawable/input_bg"
-                android:visibility="gone"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8.0dip">
+                android:layout_margin="8.0dip"
+                android:background="@drawable/input_bg"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <ImageView
-                    android:padding="8.0dip"
                     android:layout_width="40.0dip"
                     android:layout_height="40.0dip"
+                    android:padding="8.0dip"
                     android:src="@drawable/ic_action_search"
                     app:tint="@color/md_grey_900" />
 
                 <EditText
                     android:id="@+id/edt_search"
-                    android:background="@android:color/transparent"
                     android:layout_width="fill_parent"
                     android:layout_height="48.0dip"
-                    android:hint="Search here ..."
+                    android:background="@android:color/transparent"
+                    android:hint="@string/search_here"
                     android:maxLines="1"
                     android:singleLine="true" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:gravity="center"
-                android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8.0dip">
+                android:layout_margin="8.0dip"
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:background="@drawable/input_bg"
                     android:layout_width="0.0dip"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="8.0dip"
-                    android:layout_weight="1.0">
+                    android:layout_marginEnd="8.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/input_bg"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <Spinner
                         android:id="@+id/spn_category"
@@ -76,42 +76,43 @@
                 </LinearLayout>
 
                 <TextView
-                    android:textSize="12.0dip"
-                    android:textColor="@color/md_black_1000"
-                    android:gravity="center"
                     android:id="@+id/btn_select_state"
-                    android:background="@drawable/btn_bg"
                     android:layout_width="80.0dip"
                     android:layout_height="40.0dip"
-                    android:text="Active" />
+                    android:background="@drawable/btn_bg"
+                    android:gravity="center"
+                    android:text="@string/active"
+                    android:textColor="@color/md_black_1000"
+                    android:textSize="12.0dip" />
 
                 <ImageView
                     android:id="@+id/btn_sync"
-                    android:background="@drawable/btn_bg"
-                    android:padding="8.0dip"
                     android:layout_width="40.0dip"
                     android:layout_height="40.0dip"
-                    android:layout_marginLeft="4.0dip"
+                    android:layout_marginStart="4.0dip"
+                    android:background="@drawable/btn_bg"
+                    android:padding="8.0dip"
                     android:src="@drawable/ic_sync_data" />
 
                 <TextView
-                    android:textColor="@color/md_black_1000"
-                    android:gravity="center"
                     android:id="@+id/btn_select_period"
-                    android:background="@drawable/btn_bg"
-                    android:padding="8.0dip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="8.0dip"
-                    android:text="Select\nPeriod" />
+                    android:layout_marginStart="8.0dip"
+                    android:background="@drawable/btn_bg"
+                    android:gravity="center"
+                    android:padding="8.0dip"
+                    android:text="@string/select_period"
+                    android:textColor="@color/md_black_1000" />
 
             </LinearLayout>
+
             <LinearLayout
-                android:gravity="center"
-                android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8.0dip">
+                android:layout_margin="8.0dip"
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/txt_count"
@@ -121,51 +122,55 @@
                     android:text="count: 0" />
 
                 <Button
-                    android:textColor="@color/md_white_1000"
                     android:id="@+id/btn_reset_sms"
+                    android:layout_width="0.0dip"
+                    android:layout_height="40.0dip"
+                    android:layout_weight="1.0"
                     android:background="@drawable/btn_bg_2"
                     android:padding="8.0dip"
-                    android:layout_width="0.0dip"
-                    android:layout_height="40.0dip"
-                    android:text="Reset SMS"
-                    android:layout_weight="1.0" />
+                    android:text="@string/reset_sms"
+                    android:textColor="@color/md_white_1000" />
 
                 <Button
-                    android:textColor="@color/md_white_1000"
                     android:id="@+id/btn_attach_main"
-                    android:background="@drawable/btn_bg_3"
-                    android:padding="8.0dip"
                     android:layout_width="0.0dip"
                     android:layout_height="40.0dip"
-                    android:layout_marginLeft="8.0dip"
-                    android:text="Attach" android:layout_weight="1.0" />
+                    android:layout_marginStart="8.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/btn_bg_3"
+                    android:padding="8.0dip"
+                    android:text="@string/attach"
+                    android:textColor="@color/md_white_1000" />
 
                 <Button
                     android:id="@+id/btn_send_sms"
-                    android:background="@drawable/btn_bg"
-                    android:padding="8.0dip"
                     android:layout_width="0.0dip"
                     android:layout_height="40.0dip"
-                    android:layout_marginLeft="8.0dip"
-                    android:text="Send SMS" android:layout_weight="1.0" />
+                    android:layout_marginStart="8.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/btn_bg"
+                    android:padding="8.0dip"
+                    android:text="@string/send_sms" />
 
             </LinearLayout>
+
             <androidx.recyclerview.widget.RecyclerView
-                android:orientation="vertical"
                 android:id="@+id/tasks_recycler"
                 android:layout_width="fill_parent"
                 android:layout_height="0.0dip"
                 android:layout_weight="1.0"
+                android:orientation="vertical"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
             <TextView
-                android:textColor="@color/md_white_1000"
-                android:gravity="center"
                 android:id="@+id/btn_reminder"
-                android:background="@color/md_red_500"
-                android:padding="12.0dip"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="You Have Reminders" />
+                android:background="@color/md_red_500"
+                android:gravity="center"
+                android:padding="12.0dip"
+                android:text="@string/you_have_reminders"
+                android:textColor="@color/md_white_1000" />
         </LinearLayout>
     </RelativeLayout>
 </LinearLayout>

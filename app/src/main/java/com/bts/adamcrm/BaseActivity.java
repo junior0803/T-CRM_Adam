@@ -13,6 +13,8 @@ public class BaseActivity extends AppCompatActivity {
 
     public SharedPreferencesManager sharedPreferencesManager;
     public static final int PICKER_REQUEST_CODE = 5000;
+    public static final int FILE_SELECT_CODE = 1111;
+    public static final int INVOICE_REQUEST_CODE = 9000;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
