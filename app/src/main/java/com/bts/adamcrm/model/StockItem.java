@@ -1,10 +1,21 @@
 package com.bts.adamcrm.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class StockItem {
+    @SerializedName("description")
     public String description;
+
+    @SerializedName("key")
     public Long key;
+
+    @SerializedName("minimum_quantity")
     public Long minimum_quantity;
+
+    @SerializedName("pno")
     public Long pno;
+
+    @SerializedName("quantity")
     public Long quantity;
 
     public StockItem() {

@@ -24,6 +24,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -448,7 +449,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     @Override
-    public void onClick(View view) {
+    public void onClick(@NonNull View view) {
         switch (view.getId()){
             case R.id.btn_add_invoice:
                 CreateInvoiceActivity.launch(this, "");
@@ -660,7 +661,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         txt_sms_staus.setText(R.string.sms_sent);
         txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
         try {
-            Log.i("Dimo", strNumber);
+            Log.i("junior", strNumber);
             Intent intent = new Intent("android.intent.action.VIEW");
             intent.putExtra("address", strNumber);
             intent.putExtra("sms_body", string);

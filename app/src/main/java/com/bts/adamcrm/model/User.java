@@ -1,10 +1,15 @@
 package com.bts.adamcrm.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class User {
+    @SerializedName("date_logged_in")
     public Long date_logged_in;
+
+    @SerializedName("id")
     public String id;
 
     public User() {

@@ -503,7 +503,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             return;
         }
         try {
-            Log.i("Dimo", String.valueOf(sendMsg));
+            Log.i("junior", String.valueOf(sendMsg));
             Intent intent = new Intent("android.intent.action.SENDTO", Uri.parse("smsto:" + sendMsg));
             intent.putExtra("sms_body", toString);
             startActivity(intent);

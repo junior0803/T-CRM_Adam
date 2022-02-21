@@ -1,7 +1,12 @@
 package com.bts.adamcrm.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Nav {
+    @SerializedName("icon")
     public int icon;
+
+    @SerializedName("title")
     public String title;
 
     public Nav(String str, int i) {

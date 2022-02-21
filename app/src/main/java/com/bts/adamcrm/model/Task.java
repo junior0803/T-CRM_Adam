@@ -1,6 +1,9 @@
 package com.bts.adamcrm.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Task {
+    @SerializedName("title")
     public String title;
 
     public Task(String title){
