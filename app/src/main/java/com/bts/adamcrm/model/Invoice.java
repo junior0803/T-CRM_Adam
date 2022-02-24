@@ -6,252 +6,216 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class Invoice {
-    @SerializedName("address")
+
+    @SerializedName("id")
     @Expose
-    public String address;
-    @SerializedName("comment")
-    @Expose
-    public String comment;
-    @SerializedName("due_total")
-    @Expose
-    public String due_total;
-    @SerializedName("edt_company")
-    @Expose
-    public String edt_company;
-    @SerializedName("email")
-    @Expose
-    public String email;
-    @SerializedName("exclude_vat")
-    @Expose
-    public String exclude_vat;
-    @SerializedName("file")
-    @Expose
-    public String file;
-    @SerializedName("file2")
-    @Expose
-    public String file2;
-    @SerializedName("file_address")
-    @Expose
-    public String file_address;
-    @SerializedName("file_address2")
-    @Expose
-    public String file_address2;
-    @SerializedName("include_total")
-    @Expose
-    public String include_total;
-    @SerializedName("invoiceItemList")
-    @Expose
-    public List<InvoiceItem> invoiceItemList;
-    @SerializedName("invoice_date")
-    @Expose
-    public String invoice_date;
+    public String id;
     @SerializedName("invoice_no")
     @Expose
     public String invoice_no;
-    @SerializedName("key")
+    @SerializedName("email")
     @Expose
-    public String key;
-    @SerializedName("logo")
+    public String email;
+    @SerializedName("invoice_date")
     @Expose
-    public String logo;
-    @SerializedName("logo2")
+    public String invoice_date;
+    @SerializedName("mobile_num")
     @Expose
-    public String logo2;
-    @SerializedName("mobile_no")
+    public String mobile_num;
+    @SerializedName("to")
     @Expose
-    public String mobile_no;
-    @SerializedName("payed_amount")
+    public String to;
+    @SerializedName("from_address")
     @Expose
-    public String payed_amount;
+    public String from_address;
+    @SerializedName("items")
+    @Expose
+    //public List<InvoiceItem> items;
+    public String items;
+    @SerializedName("exclude_vat")
+    @Expose
+    public String exclude_vat;
     @SerializedName("vat_amount")
     @Expose
     public String vat_amount;
+    @SerializedName("invoice_total")
+    @Expose
+    public String invoice_total;
+    @SerializedName("payed_amount")
+    @Expose
+    public String payed_amount;
+    @SerializedName("due_total")
+    @Expose
+    public String due_total;
+//    @SerializedName("address")
+//    @Expose
+//    public String address;
+    @SerializedName("comment")
+    @Expose
+    public String comment;
+    @SerializedName("customer_id")
+    @Expose
+    public String customer_id;
+    @SerializedName("created_at")
+    @Expose
+    public String created_at;
+    @SerializedName("updated_at")
+    @Expose
+    public String updated_at;
 
     public Invoice() {
     }
 
-    public Invoice(String invoice_no, String fileaddr, String fileaddr2, String email, String date,
-                   String mobile_no, String address, String company, List<InvoiceItem> list, String exclude_vat,
-                   String vat_amount, String include_total, String payed_amount, String due_total,
-                   String comment, String logo, String logo2, String file, String file2) {
+    public Invoice(String id, String invoice_no, String email, String invoice_date, String mobile_num, String to, String from_address, String items, String exclude_vat, String vat_amount, String invoice_total, String payed_amount, String due_total, String comment) {
+        this.id = id;
         this.invoice_no = invoice_no;
-        this.file_address = fileaddr;
-        this.file_address2 = fileaddr2;
         this.email = email;
-        this.invoice_date = date;
-        this.mobile_no = mobile_no;
-        this.address = address;
-        this.edt_company = company;
-        this.invoiceItemList = list;
+        this.invoice_date = invoice_date;
+        this.mobile_num = mobile_num;
+        this.to = to;
+        this.from_address = from_address;
+        this.items = items;
         this.exclude_vat = exclude_vat;
         this.vat_amount = vat_amount;
-        this.include_total = include_total;
+        this.invoice_total = invoice_total;
         this.payed_amount = payed_amount;
         this.due_total = due_total;
         this.comment = comment;
-        this.logo = logo;
-        this.logo2 = logo2;
-        this.file = file;
-        this.file2 = file2;
     }
 
-    public String getFile_address2() {
-        return this.file_address2;
+    public String getId() {
+        return id;
     }
 
-    public void setFile_address2(String str) {
-        this.file_address2 = str;
-    }
-
-    public String getFile2() {
-        return this.file2;
-    }
-
-    public void setFile2(String str) {
-        this.file2 = str;
-    }
-
-    public String getFile_address() {
-        return this.file_address;
-    }
-
-    public void setFile_address(String str) {
-        this.file_address = str;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getInvoice_no() {
-        return this.invoice_no;
+        return invoice_no;
     }
 
-    public void setInvoice_no(String str) {
-        this.invoice_no = str;
+    public void setInvoice_no(String invoice_no) {
+        this.invoice_no = invoice_no;
     }
 
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
-    public void setEmail(String str) {
-        this.email = str;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getInvoice_date() {
-        return this.invoice_date;
+        return invoice_date;
     }
 
-    public void setInvoice_date(String str) {
-        this.invoice_date = str;
+    public void setInvoice_date(String invoice_date) {
+        this.invoice_date = invoice_date;
     }
 
-    public String getMobile_no() {
-        return this.mobile_no;
+    public String getMobile_num() {
+        return mobile_num;
     }
 
-    public void setMobile_no(String str) {
-        this.mobile_no = str;
+    public void setMobile_num(String mobile_num) {
+        this.mobile_num = mobile_num;
     }
 
-    public String getAddress() {
-        return this.address;
+    public String getTo() {
+        return to;
     }
 
-    public void setAddress(String str) {
-        this.address = str;
+    public void setTo(String to) {
+        this.to = to;
     }
 
-    public String getEdt_company() {
-        return this.edt_company;
+    public String getFrom_address() {
+        return from_address;
     }
 
-    public void setEdt_company(String str) {
-        this.edt_company = str;
+    public void setFrom_address(String from_address) {
+        this.from_address = from_address;
     }
 
-    public List<InvoiceItem> getInvoiceItemList() {
-        return this.invoiceItemList;
+    public String getItems() {
+        return items;
     }
 
-    public void setInvoiceItemList(List<InvoiceItem> list) {
-        this.invoiceItemList = list;
-    }
-
-    public String getLogo2() {
-        return this.logo2;
-    }
-
-    public void setLogo2(String str) {
-        this.logo2 = str;
+    public void setItems(String items) {
+        this.items = items;
     }
 
     public String getExclude_vat() {
-        return this.exclude_vat;
+        return exclude_vat;
     }
 
-    public void setExclude_vat(String str) {
-        this.exclude_vat = str;
+    public void setExclude_vat(String exclude_vat) {
+        this.exclude_vat = exclude_vat;
     }
 
     public String getVat_amount() {
-        return this.vat_amount;
+        return vat_amount;
     }
 
-    public void setVat_amount(String str) {
-        this.vat_amount = str;
+    public void setVat_amount(String vat_amount) {
+        this.vat_amount = vat_amount;
     }
 
-    public String getInclude_total() {
-        return this.include_total;
+    public String getInvoice_total() {
+        return invoice_total;
     }
 
-    public void setInclude_total(String str) {
-        this.include_total = str;
+    public void setInvoice_total(String invoice_total) {
+        this.invoice_total = invoice_total;
     }
 
     public String getPayed_amount() {
-        return this.payed_amount;
+        return payed_amount;
     }
 
-    public void setPayed_amount(String str) {
-        this.payed_amount = str;
+    public void setPayed_amount(String payed_amount) {
+        this.payed_amount = payed_amount;
     }
 
     public String getDue_total() {
-        return this.due_total;
+        return due_total;
     }
 
-    public void setDue_total(String str) {
-        this.due_total = str;
+    public void setDue_total(String due_total) {
+        this.due_total = due_total;
     }
 
     public String getComment() {
-        return this.comment;
+        return comment;
     }
 
-    public void setComment(String str) {
-        this.comment = str;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
-    public String getKey() {
-        return this.key;
+    public String getCustomer_id() {
+        return customer_id;
     }
 
-    public void setKey(String str) {
-        this.key = str;
+    public void setCustomer_id(String customer_id) {
+        this.customer_id = customer_id;
     }
 
-    public String getLogo() {
-        return this.logo;
+    public String getCreated_at() {
+        return created_at;
     }
 
-    public void setLogo(String str) {
-        this.logo = str;
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 
-    public String getFile() {
-        return this.file;
+    public String getUpdated_at() {
+        return updated_at;
     }
 
-    public void setFile(String str) {
-        this.file = str;
+    public void setUpdated_at(String updated_at) {
+        this.updated_at = updated_at;
     }
 }

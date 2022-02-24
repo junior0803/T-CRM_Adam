@@ -9,12 +9,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.model.User;
+import com.bts.adamcrm.services.ApiRepository;
+import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
 
@@ -31,27 +38,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     ProgressDialog progressDialog;
 
 
+
     public static void launch(Activity activity) {
         activity.startActivity(new Intent(activity.getBaseContext(), LoginActivity.class));
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //updateUI();
-    }
-
-    private void updateUI() {
-        ProgressDialog progressDialog = this.progressDialog;
-        if (progressDialog != null && progressDialog.isShowing()) {
-            this.progressDialog.dismiss();
-        }
-
-//        if (firebaseUser != null) {
-//            launchMain(firebaseUser);
-//        }
-        launchMain();
-    }
 
     private void launchMain() {
         MainActivity.launch(this);
@@ -64,8 +55,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         this.progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
-        progressDialog.setTitle(R.string.login_check);
-        progressDialog.show();
         this.btn_login.setOnClickListener(this);
         this.name.setOnClickListener(this);
     }
@@ -99,7 +88,25 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     }
 
     private void login() {
+        progressDialog.show();
         Log.d(TAG, "signInWithEmail:success");
-        updateUI();
+        apiRepository.getApiService().logIn(edt_username.getText().toString(), edt_password.getText().toString()).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                Log.e("junior", "onResponse :" + new Gson().toJson(response.body()));
+                if (response.isSuccessful()){
+                    launchMain();
+                } else {
+                    showToast("Invalid User and Password");
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("junior", "onFailure : " + t.getMessage());
+                progressDialog.dismiss();
+            }
+        });
     }
 }

@@ -107,61 +107,61 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
             edt_mobile.setText(sharedPreferencesManager.getStringValue("mobile"));
             edt_email.setText(sharedPreferencesManager.getStringValue("email"));
         } else {
-            invoice = new Gson().fromJson(str_invoice, Invoice.class);
-            if (invoice.getFile_address() != null)
-                logoFile = new File(invoice.getFile_address());
-            if (invoice.getFile_address2() != null)
-                logoFile2 = new File(invoice.getFile_address2());
-
-            if (logoFile != null && logoFile.exists()) {
-                btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
-            } else {
-                invoice.setFile("");
-                invoice.setFile_address("");
-                logoFile = null;
-            }
-
-            if (logoFile2 != null && logoFile2.exists()){
-                btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
-            } else {
-                invoice.setFile2("");
-                invoice.setFile_address2("");
-                logoFile2 = null;
-            }
-
-            if (!sharedPreferencesManager.getStringValue("logo").equals("")){
-                logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
-                if (logoFile.exists()){
-                    btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
-                } else {
-                    invoice.setFile("");
-                    invoice.setFile_address("");
-                    logoFile = null;
-                }
-            }
-            if (!sharedPreferencesManager.getStringValue("logo2").equals("")){
-                logoFile2 = new File(sharedPreferencesManager.getStringValue("logo2"));
-                if (logoFile2.exists()){
-                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
-                } else {
-                    invoice.setFile2("");
-                    invoice.setFile_address2("");
-                    logoFile2 = null;
-                }
-            }
-            edt_invoice_no.setText(invoice.getInvoice_no());
-            edt_email.setText(invoice.getEmail());
-            edt_invoice_date.setText(invoice.getInvoice_date());
-            edt_mobile.setText(invoice.getMobile_no());
-            edt_address.setText(invoice.getAddress());
-            edt_company.setText(invoice.getEdt_company());
-            invoiceItemList = invoice.getInvoiceItemList();
-            edt_exclude_vat.setText(invoice.getExclude_vat());
-            edt_vat_amount.setText(invoice.getVat_amount());
-            edt_invoice_total.setText(invoice.getInclude_total());
-            edt_payed_amount.setText(invoice.getPayed_amount());
-            edt_due_total.setText(invoice.getDue_total());
-            edt_comment.setText(invoice.getComment());
+////            invoice = new Gson().fromJson(str_invoice, Invoice.class);
+////            if (invoice.getFile_address() != null)
+////                logoFile = new File(invoice.getFile_address());
+////            if (invoice.getFile_address2() != null)
+////                logoFile2 = new File(invoice.getFile_address2());
+////
+////            if (logoFile != null && logoFile.exists()) {
+////                btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+////            } else {
+////                invoice.setFile("");
+////                invoice.setFile_address("");
+////                logoFile = null;
+////            }
+////
+////            if (logoFile2 != null && logoFile2.exists()){
+////                btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+////            } else {
+////                invoice.setFile2("");
+////                invoice.setFile_address2("");
+////                logoFile2 = null;
+////            }
+////
+////            if (!sharedPreferencesManager.getStringValue("logo").equals("")){
+////                logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
+////                if (logoFile.exists()){
+////                    btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+////                } else {
+////                    invoice.setFile("");
+////                    invoice.setFile_address("");
+////                    logoFile = null;
+////                }
+////            }
+////            if (!sharedPreferencesManager.getStringValue("logo2").equals("")){
+////                logoFile2 = new File(sharedPreferencesManager.getStringValue("logo2"));
+////                if (logoFile2.exists()){
+////                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+////                } else {
+////                    invoice.setFile2("");
+////                    invoice.setFile_address2("");
+////                    logoFile2 = null;
+////                }
+////            }
+//            edt_invoice_no.setText(invoice.getInvoice_no());
+//            edt_email.setText(invoice.getEmail());
+//            edt_invoice_date.setText(invoice.getInvoice_date());
+//            edt_mobile.setText(invoice.getMobile_no());
+//            edt_address.setText(invoice.getAddress());
+//            edt_company.setText(invoice.getEdt_company());
+//            invoiceItemList = invoice.getInvoiceItemList();
+//            edt_exclude_vat.setText(invoice.getExclude_vat());
+//            edt_vat_amount.setText(invoice.getVat_amount());
+//            edt_invoice_total.setText(invoice.getInclude_total());
+//            edt_payed_amount.setText(invoice.getPayed_amount());
+//            edt_due_total.setText(invoice.getDue_total());
+//            edt_comment.setText(invoice.getComment());
         }
         btn_back.setOnClickListener(this);
         btn_add_item.setOnClickListener(this);
@@ -257,24 +257,24 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     private void save() {
         invoice.setInvoice_no(edt_invoice_no.getText().toString());
         invoice.setInvoice_date(edt_invoice_date.getText().toString());
-        invoice.setInclude_total(edt_invoice_total.getText().toString());
-        invoice.setInvoiceItemList(invoiceItemList);
-        invoice.setMobile_no(edt_mobile.getText().toString());
-        invoice.setEmail(edt_email.getText().toString());
-        invoice.setAddress(edt_address.getText().toString());
-        invoice.setEdt_company(edt_company.getText().toString());
-        if (logoFile == null){
-            invoice.setFile_address("");
-            invoice.setLogo("");
-        } else {
-            invoice.setFile_address(logoFile.getAbsolutePath());
-        }
-        if (logoFile2 == null){
-            invoice.setFile_address("");
-            invoice.setLogo("");
-        } else {
-            invoice.setFile_address(logoFile2.getAbsolutePath());
-        }
+//        invoice.setInclude_total(edt_invoice_total.getText().toString());
+//        invoice.setInvoiceItemList(invoiceItemList);
+//        invoice.setMobile_no(edt_mobile.getText().toString());
+//        invoice.setEmail(edt_email.getText().toString());
+//        invoice.setAddress(edt_address.getText().toString());
+//        invoice.setEdt_company(edt_company.getText().toString());
+//        if (logoFile == null){
+//            invoice.setFile_address("");
+//            invoice.setLogo("");
+//        } else {
+//            invoice.setFile_address(logoFile.getAbsolutePath());
+//        }
+//        if (logoFile2 == null){
+//            invoice.setFile_address("");
+//            invoice.setLogo("");
+//        } else {
+//            invoice.setFile_address(logoFile2.getAbsolutePath());
+//        }
         
         invoice.setExclude_vat(edt_exclude_vat.getText().toString());
         invoice.setVat_amount(edt_vat_amount.getText().toString());

@@ -216,7 +216,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_further_none.setText(customer.getFurther_note());
                 selected_category = customer.getCategory();
                 if (selected_category != null){
-                    btn_category.setText("Select Category : " + this.selected_category.getTitle());
+                    btn_category.setText("Select Category : " + this.selected_category.getName());
                 }
                 edt_reminder_date.setEnabled(false);
                 if (customer.getStatus() == 4){
@@ -383,7 +383,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete invoice " + this.invoiceList.get(position).getFile() + " ?");
+        //((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete invoice " + this.invoiceList.get(position).getFile() + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -721,7 +721,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     @Override
                     public void onClick(View view) {
                         Intent intent = new Intent("android.intent.action.VIEW");
-                        intent.setData(Uri.parse(invoiceList.get(position).getFile()));
+                        //intent.setData(Uri.parse(invoiceList.get(position).getFile()));
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }
@@ -729,13 +729,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (invoiceList.get(position).getFile() == null
-                                || invoiceList.get(position).getFile().equals("")){
-                            showToast("Please create invoice file first");
-                        } else {
-                            downloadUri = Uri.parse(invoiceList.get(position).getFile());
-                            showToast("Attachment selected!");
-                        }
+//                        if (invoiceList.get(position).getFile() == null
+//                                || invoiceList.get(position).getFile().equals("")){
+//                            showToast("Please create invoice file first");
+//                        } else {
+//                            downloadUri = Uri.parse(invoiceList.get(position).getFile());
+//                            showToast("Attachment selected!");
+//                        }
                         dialog.dismiss();
                     }
                 });
@@ -954,7 +954,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             @Override
             public void onItemClick(View view, int position) {
                 selected_category = categoryList.get(position);
-                btn_category.setText("Select Category : " + selected_category.getTitle());
+                btn_category.setText("Select Category : " + selected_category.getName());
                 dialog.dismiss();
             }
         }));

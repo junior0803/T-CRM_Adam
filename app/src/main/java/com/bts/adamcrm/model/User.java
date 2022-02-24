@@ -1,30 +1,31 @@
 package com.bts.adamcrm.model;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class User {
-    @SerializedName("date_logged_in")
-    public Long date_logged_in;
 
-    @SerializedName("id")
-    public String id;
+    @SerializedName("data[email]")
+    public String email;
 
-    public User() {
+    @SerializedName("data[password]")
+    public String password;
+
+
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
 
-    public User(String str, Long date) {
-        this.id = str;
-        this.date_logged_in = date;
+
+    public String getEmail(){
+        return this.email;
     }
 
-
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("id", this.id);
-        hashMap.put("date_logged_in", this.date_logged_in);
-        return hashMap;
+    public String getPassword(){
+        return this.password;
     }
 }

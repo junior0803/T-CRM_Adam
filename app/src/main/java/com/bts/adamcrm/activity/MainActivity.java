@@ -183,8 +183,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         statusList.add("Show with Reminder");
 
         if (!sharedPreferencesManager.getStringValue("last_status").equals("")){
-            int parseInt = Integer.parseInt(sharedPreferencesManager.getStringValue("last_status"));
-            selectedState = parseInt;
+            selectedState = Integer.parseInt(sharedPreferencesManager.getStringValue("last_status"));
             btn_select_state.setText(statusList.get(selectedState).replace("Show", ""));
         }
         setupCurrentDate();
@@ -267,13 +266,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                 visibleList.add(customerList.get(i));
                             }
                         }
-                    } else if (selected_category.getTitle().equals(R.string.all_categories)){
+                    } else if (selected_category.getName().equals(R.string.all_categories)){
                         if (selectedState == 0){
                             visibleList.add(customerList.get(i));
                         } else if (customerList.get(i).getStatus() == selectedState){
                             visibleList.add(customerList.get(i));
                         }
-                    } else if (selected_category.getTitle().equals(customerList.get(i).getCategory().getTitle())){
+                    } else if (selected_category.getName().equals(customerList.get(i).getCategory().getName())){
                         if (selectedState == 0){
                             visibleList.add(customerList.get(i));
                         } else if (customerList.get(i).getStatus() == selectedState){
@@ -284,7 +283,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     e.printStackTrace();
                 }
             } else if (customerList.get(i).getCategory() != null){
-                if (selected_category.getTitle().equals(R.string.all_categories)){
+                if (selected_category.getName().equals(R.string.all_categories)){
                     if (selectedState == 4){
                         if (customerList.get(i).isReminder())
                             visibleList.add(customerList.get(i));
@@ -293,7 +292,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     } else if (customerList.get(i).getStatus() == selectedState){
                         visibleList.add(customerList.get(i));
                     }
-                } else if (selected_category.getTitle().equals(customerList.get(i).getCategory().getTitle())){
+                } else if (selected_category.getName().equals(customerList.get(i).getCategory().getName())){
                     if (selectedState == 4){
                         if (customerList.get(i).isReminder())
                             visibleList.add(customerList.get(i));

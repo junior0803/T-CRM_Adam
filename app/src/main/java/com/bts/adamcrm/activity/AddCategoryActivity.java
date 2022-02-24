@@ -18,6 +18,10 @@ import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddCategoryActivity extends BaseActivity implements View.OnClickListener {
 
@@ -37,10 +41,10 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
         activity.startActivity(new Intent(activity.getBaseContext(), AddCategoryActivity.class));
     }
 
-    public static void launch(Context context, Category category){
-        Intent intent = new Intent(context, AddCategoryActivity.class);
+    public static void launch(Activity activity, Category category){
+        Intent intent = new Intent(activity, AddCategoryActivity.class);
         intent.putExtra("category", new Gson().toJson(category));
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     @Override
@@ -52,7 +56,7 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
             category_str = getIntent().getStringExtra("category");
             if (category_str != null && !category_str.equals("")){
                 category = (Category) new Gson().fromJson(getIntent().getStringExtra("category"), Category.class);
-                edt_title.setText(category.getTitle());
+                edt_title.setText(category.getName());
             }
         }
         progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
@@ -75,12 +79,43 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
                     if (category_str == null || category_str.equals("")){
                         progressDialog.show();
                         //category = new Category(edt_title.getText().toString(), )
+                        apiRepository.getApiService().createCategory(edt_title.getText().toString()).enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                if (response.isSuccessful() && response.body() != null){
+                                    showToast("Category Created!");
+                                }
+                                progressDialog.dismiss();
+                                exit();
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                progressDialog.dismiss();
+                                showToast("Please Activate internet connection!");
+                            }
+                        });
                     } else {
                         progressDialog.show();
+                        apiRepository.getApiService().updateItem(String.valueOf(category.getId()), edt_title.getText().toString())
+                                .enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        if (response.isSuccessful() && response.body() != null){
+                                            showToast("Category Updated!");
+                                            progressDialog.dismiss();
+                                            exit();
+                                        }
+                                    }
 
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                        progressDialog.dismiss();
+                                        showToast("Please Activate internet connection!");
+                                    }
+                                });
                     }
                 }
-                // Add more
         }
     }
 }

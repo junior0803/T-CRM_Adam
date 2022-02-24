@@ -8,7 +8,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     </style>
-    <style name="AppTheme.NoActionBar" parent="AppTheme">
+    <style name="AppTheme_NoActionBar" parent="@style/AppTheme">
         <item name="android:windowTranslucentStatus">false</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,6 +24,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CategoryActivity extends BaseActivity implements View.OnClickListener {
 
@@ -40,6 +45,12 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
 
     public static void launch(Activity activity) {
         activity.startActivity(new Intent(activity.getBaseContext(), CategoryActivity.class));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showData();
     }
 
     @Override
@@ -68,27 +79,43 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
         view.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AddCategoryActivity.launch(getBaseContext(), categoryList.get(position));
+                AddCategoryActivity.launch(CategoryActivity.this, categoryList.get(position));
             }
         });
         view.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteItem(getBaseContext(), categoryList.get(position));
+                deleteItem(CategoryActivity.this, categoryList.get(position));
             }
         });
     }
 
-    private void deleteItem(Context context, Category category) {
-        Dialog dialog = new Dialog(context);
+    private void deleteItem(Activity activity, Category category) {
+        final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete category " + category.getTitle() + " ?");
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete category " + category.getName() + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showToast("Delete Item more implement");
+                //showToast("Delete Item more implement");
+                apiRepository.getApiService().deleteCategory(String.valueOf(category.getId())).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.body() != null){
+                            Log("onResponse : " + response.body() + " position : " + category.getId());
+                            showData();
+                        }
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log("onFailure");
+                        showToast("Please Activate internet connection");
+                    }
+                });
             }
         });
         dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -101,7 +128,26 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void showData() {
-        // more implement
+        Log("showData");
+        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    if (progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
+                    Log("size : "+ response.body().size());
+                    categoryList = response.body();
+                    categoryAdapter.updateAdapter(categoryList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override

@@ -22,7 +22,7 @@ public final class ApiRepository {
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2/")
+                .baseUrl("http://10.10.11.153:8000/")
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();

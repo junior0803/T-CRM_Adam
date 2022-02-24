@@ -14,8 +14,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import butterknife.internal.Utils;
 
 public class CategoryAdapter2 extends RecyclerView.Adapter<CategoryAdapter2.ViewHolder> {
     private List<Category> InvoiceList;
@@ -50,7 +48,7 @@ public class CategoryAdapter2 extends RecyclerView.Adapter<CategoryAdapter2.View
     }
 
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        viewHolder.txt_title.setText(this.InvoiceList.get(i).getTitle());
+        viewHolder.txt_title.setText(this.InvoiceList.get(i).getName());
     }
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter

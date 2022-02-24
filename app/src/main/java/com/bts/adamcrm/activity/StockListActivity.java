@@ -27,6 +27,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class StockListActivity extends BaseActivity implements View.OnClickListener {
 
@@ -90,10 +94,11 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
 
             }
         });
-        stock_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+        stock_recycler.addOnItemTouchListener(new RecyclerItemClickListener(StockListActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                showEditDialog(getBaseContext(), stockItemList.get(position));
+                Log("stock_recycler position : " + position);
+                showEditDialog(StockListActivity.this, stockItemList.get(position));
             }
         }));
         loadAllData();
@@ -101,10 +106,26 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
 
     private void loadAllData() {
         progressDialog.show();
+        apiRepository.getApiService().getItemList(type, code).enqueue(new Callback<List<StockItem>>() {
+            @Override
+            public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
+                if (response.isSuccessful() && response.body() != null){
+                    stockItemList = response.body();
+                    stockItemAdapter.updateAdapter(stockItemList);
+                    stock_recycler.setAdapter(stockItemAdapter);
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<List<StockItem>> call, Throwable t) {
+                progressDialog.dismiss();
+            }
+        });
     }
 
-    private void showEditDialog(Context context, StockItem stockItem) {
-        Dialog dialog = new Dialog(context);
+    private void showEditDialog(Activity activity, StockItem stockItem) {
+        Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_edt_stock);
         TextView btnSave = dialog.findViewById(R.id.btn_save);
@@ -127,15 +148,31 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 showDeleteDialog(stockItem);
+                dialog.dismiss();
             }
         });
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                apiRepository.getApiService().updatePart(stockItem.getId(), edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
+                        , edtDescription.getText().toString(), edtPno.getText().toString(), code, type).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null){
+                            showToast("Saved!");
+                            loadAllData();
+                            dialog.dismiss();
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        showToast("Please Activate internet connection!");
+                    }
+                });
             }
         });
-
+        dialog.show();
     }
 
     private void showDeleteDialog(StockItem stockItem) {
@@ -148,8 +185,21 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 // more implement
-                showToast("deleteItem more implement");
-                dialog.dismiss();
+                apiRepository.getApiService().deletePart(stockItem.getId()).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null){
+                            showToast("Deleted!");
+                            loadAllData();
+                        }
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        showToast("Please Activate internet connection!");
+                    }
+                });
             }
         });
         dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -190,18 +240,35 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         dialog.findViewById(R.id.btn_save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String strKey;
-                StockItem stockItem = new StockItem();
-                if (stockItemList.size() > 0){
-                    strKey = ((stockItemList.get(stockItemList.size() - 1).getKey()) + 1) + "";
-                } else {
-                    strKey = BuildConfig.VERSION_NAME;
-                }
-                stockItem.setDescription(editDescription.getText().toString());
-                stockItem.setPno(Long.valueOf(editPno.getText().toString()));
-                stockItem.setQuantity(Long.valueOf(editQuantity.getText().toString()));
-                stockItem.setMinimum_quantity(Long.valueOf(editMinQuantity.getText().toString()));
-                stockItem.setKey(Long.valueOf(strKey));
+                //String strId;
+                StockItem s = new StockItem();
+//                if (stockItemList.size() > 0){
+//                    strId = ((stockItemList.get(stockItemList.size() - 1).getId()) + 1) + "";
+//                } else {
+//                    strId = BuildConfig.VERSION_NAME;
+//                }
+                s.setDescription(editDescription.getText().toString());
+                s.setPno(editPno.getText().toString());
+                s.setQuantity(editQuantity.getText().toString());
+                s.setMinimum_quantity(editMinQuantity.getText().toString());
+                s.setType(type);
+                s.setIs_shopping(code);
+                apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
+                         s.getPno(), s.getIs_shopping(), s.getType()).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null){
+                            showToast("Created!");
+                        }
+                        loadAllData();
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        showToast("Please Activate internet connection!");
+                    }
+                });
 
             }
         });
