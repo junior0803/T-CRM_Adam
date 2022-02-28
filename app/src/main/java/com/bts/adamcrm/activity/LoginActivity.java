@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -90,10 +91,10 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     private void login() {
         progressDialog.show();
         Log.d(TAG, "signInWithEmail:success");
-        apiRepository.getApiService().logIn(edt_username.getText().toString(), edt_password.getText().toString()).enqueue(new Callback<User>() {
+        apiRepository.getApiService().logIn(edt_username.getText().toString(), edt_password.getText().toString()).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                Log.e("junior", "onResponse :" + new Gson().toJson(response.body()));
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.e("junior", "onResponse :" + response.body());
                 if (response.isSuccessful()){
                     launchMain();
                 } else {
@@ -103,7 +104,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("junior", "onFailure : " + t.getMessage());
                 progressDialog.dismiss();
             }

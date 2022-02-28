@@ -1,10 +1,15 @@
 package com.bts.adamcrm.activity;
 
+import static android.app.AlarmManager.RTC_WAKEUP;
+
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -17,6 +22,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -43,6 +49,7 @@ import com.bts.adamcrm.model.Attachment2;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
+import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.gun0912.tedpermission.PermissionListener;
@@ -60,6 +67,9 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener, OnStartDragListener {
 
@@ -67,7 +77,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     ImageView action_add;
     @BindView(R.id.action_search)
     ImageView action_search;
-    List<Attachment2> attachment2List = new ArrayList();
+    List<Attachment2> attachment2List = new ArrayList<>();
     @BindView(R.id.btn_attach_main)
     Button btn_attach_main;
     TextView btn_end_date;
@@ -143,8 +153,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     List<Nav> navList = new ArrayList<>();
     ProgressDialog loadingProgress;
     ProgressDialog progressDialog;
-    List<Customer> visibleList = new ArrayList();
-    List<Customer> customerList = new ArrayList();
+    List<Customer> visibleList = new ArrayList<>();
+    List<Customer> customerList = new ArrayList<>();
     CustomerAdapter customerAdapter;
     ItemTouchHelper mItemTouchHelper;
 
@@ -158,6 +168,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
         startActivityForResult(intent, FILE_SELECT_CODE);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        loadAllData();
     }
 
     @Override
@@ -251,59 +267,51 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void showCustomerData() {
         visibleList = new ArrayList<>();
-        for (int i = 0; i < customerList.size(); i ++){
-            if (!picked_date.equals("") && !end_picked_date.equals("")){
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                try {
-                    Date date = simpleDateFormat.parse(customerList.get(i).getDate_updated());
-                    Date pickDate = simpleDateFormat.parse(picked_date);
-                    Date endPickDate = simpleDateFormat.parse(end_picked_date);
-                    if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
-                        if (selected_category == null){
-                            if (selectedState == 0){
-                                visibleList.add(customerList.get(i));
-                            } else if (customerList.get(i).getStatus() == selectedState){
-                                visibleList.add(customerList.get(i));
-                            }
-                        }
-                    } else if (selected_category.getName().equals(R.string.all_categories)){
-                        if (selectedState == 0){
-                            visibleList.add(customerList.get(i));
-                        } else if (customerList.get(i).getStatus() == selectedState){
-                            visibleList.add(customerList.get(i));
-                        }
-                    } else if (selected_category.getName().equals(customerList.get(i).getCategory().getName())){
-                        if (selectedState == 0){
-                            visibleList.add(customerList.get(i));
-                        } else if (customerList.get(i).getStatus() == selectedState){
-                            visibleList.add(customerList.get(i));
-                        }
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            } else if (customerList.get(i).getCategory() != null){
-                if (selected_category.getName().equals(R.string.all_categories)){
-                    if (selectedState == 4){
-                        if (customerList.get(i).isReminder())
-                            visibleList.add(customerList.get(i));
-                    } else if (selectedState == 0){
-                        visibleList.add(customerList.get(i));
-                    } else if (customerList.get(i).getStatus() == selectedState){
-                        visibleList.add(customerList.get(i));
-                    }
-                } else if (selected_category.getName().equals(customerList.get(i).getCategory().getName())){
-                    if (selectedState == 4){
-                        if (customerList.get(i).isReminder())
-                            visibleList.add(customerList.get(i));
-                    } else if (selectedState == 0 || customerList.get(i).getStatus() == selectedState)
-                        visibleList.add(customerList.get(i));
-                }
-            }
+        visibleList = customerList;
+//        for (int i = 0; i < customerList.size(); i ++){
+//            if (!picked_date.equals("") && !end_picked_date.equals("")){
+//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//                try {
+//                    Date date = simpleDateFormat.parse(customerList.get(i).getDate_updated());
+//                    Date pickDate = simpleDateFormat.parse(picked_date);
+//                    Date endPickDate = simpleDateFormat.parse(end_picked_date);
+//                    if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
+//                        if (selected_category == null){
+//                            if (selectedState == 0){
+//                                visibleList.add(customerList.get(i));
+//                            } else if (customerList.get(i).getState() == selectedState){
+//                                visibleList.add(customerList.get(i));
+//                            }
+//                        }
+//                    } else if (selected_category.getName().equals(R.string.all_categories)){
+//                        if (selectedState == 0){
+//                            visibleList.add(customerList.get(i));
+//                        } else if (customerList.get(i).getState() == selectedState){
+//                            visibleList.add(customerList.get(i));
+//                        }
+//                    } else if (selected_category.getName().equals(categoryList.get(customerList.get(i).getCategory_id()).getName())){
+//                        if (selectedState == 0){
+//                            visibleList.add(customerList.get(i));
+//                        } else if (customerList.get(i).getState() == selectedState){
+//                            visibleList.add(customerList.get(i));
+//                        }
+//                    }
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//            } else if (customerList.get(i).getCategory_id() != 0){
+//                if (selected_category.getName().equals(categoryList.get(customerList.get(i).getCategory_id()).getName())){
+//                    if (selectedState == 4){
+//                        if (customerList.get(i).getReminder_date() != null)
+//                            visibleList.add(customerList.get(i));
+//                    } else if (selectedState == 0 || customerList.get(i).getState() == selectedState)
+//                        visibleList.add(customerList.get(i));
+//                }
+//            }
             customerAdapter.updateAdapter(visibleList);
             txt_count.setText("Count : " + visibleList.size());
-        }
-        }
+        //}
+    }
 
     private void setupCurrentDate() {
         txt_date.setText(new SimpleDateFormat("dd/MM/yyyy",
@@ -315,10 +323,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         progressDialog.setTitle(R.string.load_data);
         customerAdapter = new CustomerAdapter(visibleList);
         tasks_recycler.setAdapter(customerAdapter);
-        tasks_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+        tasks_recycler.addOnItemTouchListener(new RecyclerItemClickListener(MainActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                CustomerDetailActivity.launch(getBaseContext(), visibleList.get(position));
+                CustomerDetailActivity.launch(MainActivity.this, visibleList.get(position));
             }
         }));
         btn_select_state.setOnClickListener(this);
@@ -343,11 +351,105 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void loadCategories(){
         // more implement
+        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    categoryList = new ArrayList<>();
+                    Category category = new Category("All Category");
+                    categoryList.add(category);
+                    selected_category = category;
+                    Log("size : "+ response.body().size());
+                    categoryList.addAll(response.body());
+                    setupCategorySpinner(categoryList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void setupCategorySpinner(List<Category> list) {
+        taskTypes = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            taskTypes.add(list.get(i).getName());
+        }
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, this.taskTypes);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spn_category.setAdapter(arrayAdapter);
     }
 
     private void loadAllData(){
         progressDialog.show();
         // more implement
+
+        apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
+            @Override
+            public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
+                str_reminder = "";
+                customerList = new ArrayList<>();
+                if (response.isSuccessful() && response.body() != null){
+                    Log("customList : " + response.body() + " size : " + response.body().size());
+                    for (Customer customer : response.body()){
+                        customerList.add(customer);
+                        if (customer.getReminder_date() != null){
+                            if (!customer.getReminder_date().equals("")){
+                                getDateAndSetupAlarm(customer.getReminder_date());
+                            }
+                            try {
+                                if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(customer.getReminder_date()).getTime() <= new Date().getTime()) {
+                                    str_reminder = str_reminder + customer.getTitle() + " <br>";
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+                if (str_reminder.equals("") || shownReminderDialog){
+                    btn_reminder.setVisibility(View.GONE);
+                } else {
+                    if (!showedNotification){
+                        showReminderDialog(MainActivity.this, Html.fromHtml(str_reminder).toString());
+                    }
+                    btn_reminder.setVisibility(View.VISIBLE);
+                }
+                showCustomerData();
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<List<Customer>> call, Throwable t) {
+                progressDialog.dismiss();
+            }
+        });
+    }
+
+    public void getDateAndSetupAlarm(String str) {
+        try {
+            if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(str).getTime() >= new Date().getTime()) {
+                Date date = new Date();
+                try {
+                    date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(str);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                setupAlarm(date.getTime());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void setupAlarm(long time) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        PendingIntent broadcast = PendingIntent.getBroadcast(this, 0, new Intent(this, AlarmReceiver.class), 0);
+        alarmManager.setExactAndAllowWhileIdle(RTC_WAKEUP, time, broadcast);
     }
 
     private void updateActiveDevices(){
@@ -414,9 +516,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 loadingProgress.setTitle(R.string.sync_data);
                 loadingProgress.show();
                 visibleList = customerAdapter.getCustomerList();
-                for (int i = 0; i < visibleList.size(); i ++){
-                    visibleList.get(i).setSort(i);
-                }
+//                for (int i = 0; i < visibleList.size(); i ++){
+//                    visibleList.get(i).setSort(i);
+//                }
                 break;
             case R.id.action_search:
                 if (search_wrapper.getVisibility() == View.VISIBLE){
@@ -485,15 +587,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         int status = 0;
         for (int i = 0; i < visibleList.size(); i ++){
             Customer customer = visibleList.get(i);
-            if (!customer.isSms_sent()){
+            if (customer.isSms_sent() == 0){
                 if (status == 5){
                     break;
                 }
                 if (status > 0){
                     sendMsg.append(manufactureName);
                 }
-                customer.setSms_sent(true);
-                sendMsg.append(customer.getMobile());
+                customer.setSms_sent(1);
+                sendMsg.append(customer.getMobile_phone());
                 status ++;
             }
         }
@@ -663,7 +765,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private void resetList() {
         for (int i = 0; i < visibleList.size(); i ++){
             Customer customer = visibleList.get(i);
-            customer.setSms_sent(false);
+            customer.setSms_sent(0);
             // more implement
         }
     }

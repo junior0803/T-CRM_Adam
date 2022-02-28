@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Android_Platform/Sdk/platforms/android-32/data/res/layout/browser_link_context_header.xml" value="0.16847826086956522" />
         <entry key="..\:/Android_Platform/Sdk/platforms/android-32/data/res/layout/simple_list_item_1.xml" value="0.1" />
+        <entry key="..\:/Android_Platform/Sdk/platforms/android-32/data/res/layout/simple_spinner_item.xml" value="0.16847826086956522" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/drawable/circle_shape.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/drawable/ic_check_white_24dp.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/drawable/ic_lock_white_24dp.xml" value="0.1" />
@@ -11,7 +13,7 @@
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_add_category.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_category.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_create_invoice.xml" value="0.1" />
-        <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_customer_detail.xml" value="0.1" />
+        <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_customer_detail.xml" value="0.33" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_edit_attachment.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_login.xml" value="0.1" />
         <entry key="..\:/Current_work/Adam_App/project/AdamCRM/app/src/main/res/layout/activity_main.xml" value="0.1" />

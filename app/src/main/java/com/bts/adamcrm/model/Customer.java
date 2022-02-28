@@ -1,260 +1,235 @@
 package com.bts.adamcrm.model;
 
-import androidx.core.app.NotificationCompat;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Customer {
-    @SerializedName("address")
+    @SerializedName("id")
     @Expose
-    public String address;
-    @SerializedName("attachments")
+    public int id;
+//    @SerializedName("attachments")
+//    @Expose
+//    List<Attachment> attachments = new ArrayList();
+
+    @SerializedName("title")
     @Expose
-    List<Attachment> attachments = new ArrayList();
-    @SerializedName("category")
+    public String title;
+    @SerializedName("mobile_phone")
     @Expose
-    public Category category;
-    @SerializedName("date_completed")
-    @Expose
-    public String date_completed;
-    @SerializedName("date_created")
-    @Expose
-    public String date_created;
-    @SerializedName("date_updated")
-    @Expose
-    public String date_updated;
+    public String mobile_phone;
     @SerializedName("email")
     @Expose
     public String email;
-    @SerializedName("further_note")
-    @Expose
-    public String further_note;
-    @SerializedName("invoices")
-    @Expose
-    List<Invoice> invoices = new ArrayList();
-    @SerializedName("key")
-    @Expose
-    public String key;
-    @SerializedName("mobile")
-    @Expose
-    public String mobile;
     @SerializedName("name")
     @Expose
     public String name;
-    @SerializedName("postal_code")
+    @SerializedName("address")
     @Expose
-    public String postal_code;
-    @SerializedName(NotificationCompat.CATEGORY_REMINDER)
-    @Expose
-    public boolean reminder = false;
-    @SerializedName("reminder_date")
-    @Expose
-    public String reminder_date;
-    @SerializedName("sms_sent")
-    @Expose
-    public boolean sms_sent = false;
-    @SerializedName("sort")
-    @Expose
-    public int sort;
-    @SerializedName(NotificationCompat.CATEGORY_STATUS)
-    @Expose
-    public int status;
-    @SerializedName("task_title")
-    @Expose
-    public String task_title;
+    public String address;
     @SerializedName("town")
     @Expose
     public String town;
+    @SerializedName("postal_code")
+    @Expose
+    public String postal_code;
+    @SerializedName("further_note")
+    @Expose
+    public String further_note;
+
+//    @SerializedName("invoices")
+//    @Expose
+//    List<Invoice> invoices = new ArrayList();
+
+    @SerializedName("state")
+    @Expose
+    public int state;
+    @SerializedName("remind_date")
+    @Expose
+    public String reminder_date;
+    @SerializedName("category_id")
+    @Expose
+    public int category_id;
+    @SerializedName("sms_sent")
+    @Expose
+    public int sms_sent;
+    @SerializedName("attached_files")
+    @Expose
+    public String attached_files;
+    @SerializedName("created_at")
+    @Expose
+    public String Date_created;
+    @SerializedName("updated_at")
+    @Expose
+    public String Date_updated;
+//    @SerializedName(NotificationCompat.CATEGORY_STATUS)
+//    @Expose
+//    public int status;
+
+
+//    @SerializedName(NotificationCompat.CATEGORY_REMINDER)
+//    @Expose
+//    public boolean reminder = false;
+//
+//    @SerializedName("sms_sent")
+//    @Expose
+//    public boolean sms_sent = false;
+
 
     public Customer() {
     }
 
-    public Customer(String title, String mobile, String email, String name, String address, String town,
-                    String code, String createDate, String updateDate, String completeDate,
-                    String note, int status, int sort, boolean reminder, String reminderDate,
-                    Category category, boolean sentSms, List<Attachment> attachlist, List<Invoice> invoices) {
-        this.task_title = title;
-        this.mobile = mobile;
+    public Customer(String title, String mobile_phone, String email, String name,
+                    String address, String town, String postal_code, String further_note,
+                    int state, String reminder_date, int category_id, int sms_sent,
+                    String attached_files, String date_created, String date_updated) {
+        this.title = title;
+        this.mobile_phone = mobile_phone;
         this.email = email;
         this.name = name;
         this.address = address;
         this.town = town;
-        this.postal_code = code;
-        this.date_created = createDate;
-        this.date_updated = updateDate;
-        this.further_note = note;
-        this.status = status;
-        this.sort = sort;
-        this.reminder = reminder;
-        this.reminder_date = reminderDate;
-        this.date_completed = completeDate;
-        this.category = category;
-        this.sms_sent = sentSms;
-        this.attachments = attachlist;
-        this.invoices = invoices;
+        this.postal_code = postal_code;
+        this.further_note = further_note;
+        this.state = state;
+        this.reminder_date = reminder_date;
+        this.category_id = category_id;
+        this.sms_sent = sms_sent;
+        this.attached_files = attached_files;
+        Date_created = date_created;
+        Date_updated = date_updated;
     }
 
-    public int getSort() {
-        return this.sort;
+    public int getId() {
+        return id;
     }
 
-    public void setSort(int i) {
-        this.sort = i;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getKey() {
-        return this.key;
+    public String getTitle() {
+        return title;
     }
 
-    public void setKey(String str) {
-        this.key = str;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getTask_title() {
-        return this.task_title;
+    public String getMobile_phone() {
+        return mobile_phone;
     }
 
-    public void setTask_title(String str) {
-        this.task_title = str;
-    }
-
-    public String getMobile() {
-        return this.mobile;
-    }
-
-    public void setMobile(String str) {
-        this.mobile = str;
+    public void setMobile_phone(String mobile_phone) {
+        this.mobile_phone = mobile_phone;
     }
 
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
-    public void setEmail(String str) {
-        this.email = str;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(String str) {
-        this.name = str;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getAddress() {
-        return this.address;
+        return address;
     }
 
-    public void setAddress(String str) {
-        this.address = str;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getTown() {
-        return this.town;
+        return town;
     }
 
-    public void setTown(String str) {
-        this.town = str;
+    public void setTown(String town) {
+        this.town = town;
     }
 
     public String getPostal_code() {
-        return this.postal_code;
+        return postal_code;
     }
 
-    public void setPostal_code(String str) {
-        this.postal_code = str;
-    }
-
-    public String getDate_created() {
-        return this.date_created;
-    }
-
-    public void setDate_created(String str) {
-        this.date_created = str;
-    }
-
-    public String getDate_completed() {
-        return this.date_completed;
-    }
-
-    public void setDate_completed(String str) {
-        this.date_completed = str;
+    public void setPostal_code(String postal_code) {
+        this.postal_code = postal_code;
     }
 
     public String getFurther_note() {
-        return this.further_note;
+        return further_note;
     }
 
-    public void setFurther_note(String str) {
-        this.further_note = str;
+    public void setFurther_note(String further_note) {
+        this.further_note = further_note;
     }
 
-    public boolean isReminder() {
-        return this.reminder;
+    public int getState() {
+        return state;
     }
 
-    public void setReminder(boolean z) {
-        this.reminder = z;
-    }
-
-    public int getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(int i) {
-        this.status = i;
+    public void setState(int state) {
+        this.state = state;
     }
 
     public String getReminder_date() {
-        return this.reminder_date;
+        return reminder_date;
     }
 
-    public void setReminder_date(String str) {
-        this.reminder_date = str;
+    public void setReminder_date(String reminder_date) {
+        this.reminder_date = reminder_date;
     }
 
-    public Category getCategory() {
-        return this.category;
+    public int getCategory_id() {
+        return category_id;
     }
 
-    public void setCategory(Category category2) {
-        this.category = category2;
+    public void setCategory_id(int category_id) {
+        this.category_id = category_id;
     }
 
-    public boolean isSms_sent() {
-        return this.sms_sent;
+    public int getSms_sent() {
+        return sms_sent;
     }
 
-    public void setSms_sent(boolean z) {
-        this.sms_sent = z;
+    public void setSms_sent(int sms_sent) {
+        this.sms_sent = sms_sent;
     }
 
-    public List<Attachment> getAttachments() {
-        return this.attachments;
+    public String getAttached_files() {
+        return attached_files;
     }
 
-    public void setAttachments(List<Attachment> list) {
-        this.attachments = list;
+    public void setAttached_files(String attached_files) {
+        this.attached_files = attached_files;
     }
 
-    public List<Invoice> getInvoices() {
-        return this.invoices;
+    public int isSms_sent() {
+        return sms_sent;
     }
 
-    public void setInvoices(List<Invoice> list) {
-        this.invoices = list;
+    public String getDate_created() {
+        return Date_created;
+    }
+
+    public void setDate_created(String date_created) {
+        Date_created = date_created;
     }
 
     public String getDate_updated() {
-        return this.date_updated;
+        return Date_updated;
     }
 
-    public void setDate_updated(String str) {
-        this.date_updated = str;
+    public void setDate_updated(String date_updated) {
+        Date_updated = date_updated;
     }
 }

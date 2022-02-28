@@ -3,7 +3,6 @@ package com.bts.adamcrm.activity;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,7 +15,6 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.BaseActivity;
-import com.bts.adamcrm.BuildConfig;
 import com.bts.adamcrm.R;
 import com.bts.adamcrm.adapter.StockItemAdapter;
 import com.bts.adamcrm.model.StockItem;
@@ -106,7 +104,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
 
     private void loadAllData() {
         progressDialog.show();
-        apiRepository.getApiService().getItemList(type, code).enqueue(new Callback<List<StockItem>>() {
+        apiRepository.getApiService().getPartItemList(type, code).enqueue(new Callback<List<StockItem>>() {
             @Override
             public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
                 if (response.isSuccessful() && response.body() != null){

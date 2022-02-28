@@ -20,8 +20,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import butterknife.internal.Utils;
 
 public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHolder> implements Filterable, ItemTouchHelperAdapter {
     private List<Customer> customerList;
@@ -45,7 +43,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHo
                     filterResults.values = customerList;
                 } else {
                     for (Customer customer : customerList) {
-                        if (customer.getTask_title().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        if (customer.getTitle().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                             arrayList.add(customer);
                         }
                     }
@@ -110,9 +108,9 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHo
 
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         Customer customer = (Customer) filteredData.get(i);
-        viewHolder.title.setText(customer.getTask_title().split("\n")[0]);
-        viewHolder.chk_title.setChecked(customer.getStatus() == 2);
-        if (customer.isSms_sent()) {
+        viewHolder.title.setText(customer.getTitle().split("\n")[0]);
+        viewHolder.chk_title.setChecked(customer.getSms_sent() == 1);
+        if (customer.isSms_sent() == 1) {
             viewHolder.title.setTextColor(viewHolder.chk_title.getContext().getResources().getColor(R.color.colorAccent));
         } else {
             viewHolder.title.setTextColor(viewHolder.chk_title.getContext().getResources().getColor(R.color.md_black_1000));

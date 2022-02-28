@@ -41,10 +41,6 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
         activity.startActivity(new Intent(activity.getBaseContext(), RegisterActivity.class));
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 
     private void updateUI(){
         if (progressDialog != null && progressDialog.isShowing()){
@@ -86,8 +82,15 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
                 edt_password.getText().toString(), confirm_password.getText().toString()).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.e("junior", "onResponse :" + new Gson().toJson(response.body()));
-                updateUI();
+                Log.e("junior", "onResponse :" + response.body());
+                if (response.isSuccessful())
+                    updateUI();
+                else {
+                    if (progressDialog != null && progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
+                    showToast("Could not create User!");
+                }
             }
 
             @Override

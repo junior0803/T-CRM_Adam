@@ -56,6 +56,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CustomerDetailActivity extends BaseActivity implements View.OnClickListener {
     private static final int FILE_SELECT_CODE = 1111;
@@ -82,7 +86,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     private Calendar calendar;
     @BindView(R.id.chk_remind_me)
     CheckBox chk_remind_me;
-    List<Category> categoryList;
+    List<Category> categoryList = new ArrayList<>();
     Customer customer;
     String customer_str;
     Uri downloadUri;
@@ -127,7 +131,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     boolean reminder = false;
     int selectedIndex = -1;
     Category selected_category;
-    boolean sms_sent = false;
+    int sms_sent = 0;
     @BindView(R.id.spn_state)
     Spinner spn_state;
     @BindView(R.id.title_text)
@@ -159,10 +163,10 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         startActivityForResult(intent, FILE_SELECT_CODE);
     }
 
-    public static void launch(Context context, Customer customer){
-        Intent intent = new Intent(context, CustomerDetailActivity.class);
+    public static void launch(Activity activity, Customer customer){
+        Intent intent = new Intent(activity, CustomerDetailActivity.class);
         intent.putExtra("customer", new Gson().toJson(customer));
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     public static void launch(Activity activity){
@@ -187,12 +191,39 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         this.spn_state.setAdapter(arrayAdapter);
     }
 
+    private void setupCategory(){
+        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    categoryList = response.body();
+                    Log("setupCategory size : "+ response.body().size());
+                    if (customer != null) {
+                        Log("selected_category : " + customer.getName() + " ID : " + customer.getCategory_id());
+                        for (Category category : categoryList){
+                            if (category.getId() == customer.getCategory_id()){
+                                selected_category = category;
+                                btn_category.setText("Select Category : " + selected_category.getName());
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+
+            }
+        });
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_detail);
         ButterKnife.bind(this);
         setupStateSpinner();
+        setupCategory();
         getCurrentDate();
         recycler_invoices.setVisibility(View.GONE);
         txt_no_invoice.setVisibility(View.VISIBLE);
@@ -202,9 +233,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             customer_str = getIntent().getStringExtra("customer");
             if (customer_str != null && !customer_str.equals("")){
                 customer = new Gson().fromJson(getIntent().getStringExtra("customer"), Customer.class);
-                edt_title.setText(customer.getTask_title());
-                edt_mobile.setText(customer.getMobile());
-                edt_mobile.setText(customer.getEmail());
+                edt_title.setText(customer.getTitle());
+                edt_mobile.setText(customer.getMobile_phone());
                 edt_email.setText(customer.getEmail());
                 edt_name.setText(customer.getName());
                 edt_town.setText(customer.getTown());
@@ -214,44 +244,41 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_date_updated.setText(customer.getDate_updated());
                 edt_reminder_date.setText(customer.getReminder_date());
                 edt_further_none.setText(customer.getFurther_note());
-                selected_category = customer.getCategory();
-                if (selected_category != null){
-                    btn_category.setText("Select Category : " + this.selected_category.getName());
-                }
+
                 edt_reminder_date.setEnabled(false);
-                if (customer.getStatus() == 4){
-                    edt_reminder_date.setEnabled(true);
-                }
-                spn_state.setSelection(customer.getStatus());
+//                if (customer.getStatus() == 4){
+//                    edt_reminder_date.setEnabled(true);
+//                }
+                spn_state.setSelection(customer.getState());
                 edt_reminder_date.setText(customer.getReminder_date());
                 sms_sent = customer.isSms_sent();
-                reminder = customer.isReminder();
+                reminder = customer.getReminder_date() != null;
                 chk_remind_me.setChecked(reminder);
-                if (sms_sent){
+                if (sms_sent == 1){
                     txt_sms_staus.setText(R.string.sms_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
                 } else {
                     txt_sms_staus.setText(R.string.sms_not_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
                 }
-                if (customer.getAttachments() != null){
-                    attachmentList = customer.getAttachments();
-                    for (int i = 0; i < attachmentList.size(); i ++){
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                        getCurrentDate();
-                        try {
-                            Date date = simpleDateFormat.parse(attachmentList.get(i).getDate_delete());
-                            if (simpleDateFormat.parse(mDay + "/" + this.mMonth + "/" + this.mYear).getTime() >= date.getTime()){
-                                attachmentList.remove(i);
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                if (customer.getInvoices() != null){
-                    invoiceList = customer.getInvoices();
-                }
+//                if (customer.getAttachments() != null){
+//                    attachmentList = customer.getAttachments();
+//                    for (int i = 0; i < attachmentList.size(); i ++){
+//                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//                        getCurrentDate();
+//                        try {
+//                            Date date = simpleDateFormat.parse(attachmentList.get(i).getDate_delete());
+//                            if (simpleDateFormat.parse(mDay + "/" + this.mMonth + "/" + this.mYear).getTime() >= date.getTime()){
+//                                attachmentList.remove(i);
+//                            }
+//                        } catch (ParseException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//                if (customer.getInvoices() != null){
+//                    invoiceList = customer.getInvoices();
+//                }
             }
         }
         attachmentAdapter  = new AttachmentAdapter(attachmentList);
@@ -490,7 +517,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 }
                 break;
             case R.id.btn_send_sms:
-                if (!edt_mobile.getText().toString().equals("") || customer != null && customer.getMobile() != null){
+                if (!edt_mobile.getText().toString().equals("") || customer != null && customer.getMobile_phone() != null){
                     showSendSMSDialog(this);
                 } else {
                     showToast("Please enter a mobile number!");
@@ -519,7 +546,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         TextView btnNo = dialog.findViewById(R.id.btn_no);
         TextView btnYes = dialog.findViewById(R.id.btn_yes);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.edit_sms_state);
-        if (sms_sent){
+        if (sms_sent == 1){
             txtMsg.setText("Dou you want to set sms state to not sent?");
         } else {
             txtMsg.setText("Dou you want to set sms state to sent?");
@@ -527,14 +554,14 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (sms_sent){
+                if (sms_sent == 1){
                     txt_sms_staus.setText(R.string.sms_not_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
                 } else {
                     txt_sms_staus.setText(R.string.sms_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
                 }
-                sms_sent = !sms_sent;
+                sms_sent = 0;
                 dialog.dismiss();
             }
         });
@@ -652,12 +679,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void sendSMS(String string, Dialog dialog) {
         String strNumber;
-        if (customer.getMobile() != null){
-            strNumber = customer.getMobile();
+        if (customer.getMobile_phone() != null){
+            strNumber = customer.getMobile_phone();
         } else {
             strNumber = edt_mobile.getText().toString();
         }
-        sms_sent = true;
+        sms_sent = 1;
         txt_sms_staus.setText(R.string.sms_sent);
         txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
         try {
@@ -764,7 +791,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     showToast("Please select a category first");
                     return;
                 }
-                Log.i("junior", customer.getMobile());
+                Log.i("junior", customer.getMobile_phone());
                 Log.i("junior", edt_email.getText().toString());
                 if (downloadUri != null)
                     editText.append(downloadUri.toString());
@@ -816,21 +843,23 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void saveOrUpdate(boolean b, Dialog dialog) {
-        if (customer == null || customer.getMobile().equals("")){
+        if (selected_category == null){
+            showToast("Please select a category first");
+            return;
+        }
+        if (customer == null || customer.getTitle().equals("")){
             customer = new Customer();
-            customer.setSort(-1);
-            customer.setTask_title(edt_title.getText().toString());
-            customer.setMobile(edt_mobile.getText().toString());
+            customer.setTitle(edt_title.getText().toString());
+            customer.setMobile_phone(edt_mobile.getText().toString());
             customer.setEmail(edt_email.getText().toString());
             customer.setName(edt_name.getText().toString());
             customer.setAddress(edt_address.getText().toString());
             customer.setTown(edt_town.getText().toString());
             customer.setPostal_code(edt_post_code.getText().toString());
             customer.setFurther_note(edt_further_none.getText().toString());
-            customer.setCategory(selected_category);
+            customer.setCategory_id(selected_category.getId());
             customer.setSms_sent(sms_sent);
-            customer.setReminder(reminder);
-            customer.setStatus(spn_state.getSelectedItemPosition());
+            customer.setState(spn_state.getSelectedItemPosition());
             if (reminder) {
                 customer.setReminder_date(edt_reminder_date.getText().toString());
                 getDateAndSetupAlarm(edt_reminder_date.getText().toString());
@@ -841,36 +870,53 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             mYear = calendar.get(1);
             mMonth = calendar.get(2) + 1;
             mDay = calendar.get(5);
-            if (spn_state.getSelectedItemPosition() == 2){
-                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
-            } else {
-                customer.setDate_completed("");
-            }
+//            if (spn_state.getSelectedItemPosition() == 2){
+//                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
+//            } else {
+//                customer.setDate_completed("");
+//            }
             customer.setDate_updated(mDay + "/" + mMonth + "/" + mYear);
             if (!edt_date_created.getText().toString().equals("")){
                 customer.setDate_created(edt_date_created.getText().toString());
             } else {
                 customer.setDate_created(mDay + "/" + mMonth + "/" + mYear);
             }
-            customer.setAttachments(attachmentList);
-            customer.setInvoices(invoiceList);
-
+//            customer.setAttachments(attachmentList);
+//            customer.setInvoices(invoiceList);
             // more implement...
+            apiRepository.getApiService().insertCustomer(customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
+                    customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
+                    customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
+                    customer.getAttached_files()).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful() && response.body() != null){
+                        showToast("Customer Saved!");
+                        dialog.dismiss();
+                        exit();
+                    }
+                }
 
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    showToast("Please Activate internet connection!");
+                }
+            });
         } else {
-            customer.setTask_title(edt_title.getText().toString());
-            customer.setMobile(edt_mobile.getText().toString());
+            customer.setTitle(edt_title.getText().toString());
+            customer.setMobile_phone(edt_mobile.getText().toString());
             customer.setEmail(edt_email.getText().toString());
             customer.setName(edt_name.getText().toString());
             customer.setAddress(edt_address.getText().toString());
             customer.setTown(edt_town.getText().toString());
             customer.setPostal_code(edt_post_code.getText().toString());
-            customer.setDate_created(edt_date_created.getText().toString());
+            customer.setState(spn_state.getSelectedItemPosition());
             customer.setFurther_note(edt_further_none.getText().toString());
-            customer.setCategory(selected_category);
+            customer.setDate_created(edt_date_created.getText().toString());
+            customer.setDate_updated(edt_date_updated.getText().toString());
+            customer.setCategory_id(selected_category.getId());
             customer.setSms_sent(sms_sent);
-            customer.setReminder(reminder);
-            customer.setStatus(spn_state.getSelectedItemPosition());
+
             if (reminder) {
                 customer.setReminder_date(edt_reminder_date.getText().toString());
                 getDateAndSetupAlarm(edt_reminder_date.getText().toString());
@@ -881,14 +927,34 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             mYear = calendar.get(1);
             mMonth = calendar.get(2) + 1;
             mDay = calendar.get(5);
-            if (spn_state.getSelectedItemPosition() == 2){
-                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
-            } else {
-                customer.setDate_completed("");
-            }
-            customer.setAttachments(attachmentList);
-            customer.setInvoices(invoiceList);
+//            if (spn_state.getSelectedItemPosition() == 2){
+//                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
+//            } else {
+//                customer.setDate_completed("");
+//            }
+//            customer.setAttachments(attachmentList);
+//            customer.setInvoices(invoiceList);
             // more implement
+            apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
+                    customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
+                    customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
+                    customer.getAttached_files()).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful() && response.body() != null){
+                        showToast("Customer Updated!");
+                    } else {
+                        showToast("Update Failed");
+                    }
+                    dialog.dismiss();
+                    exit();
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    showToast("Please Activate internet connection!");
+                }
+            });
         }
     }
 
@@ -915,7 +981,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete customer " + customer.getTask_title() + " ?");
+        //((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete customer " + customer.getTask_title() + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -947,7 +1013,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.setContentView(R.layout.dialog_category);
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler_category);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_category);
-        categoryList = new ArrayList<>();
+        //categoryList = new ArrayList<>();
         CategoryAdapter2 categoryAdapter2 = new CategoryAdapter2(categoryList);
         recyclerView.setAdapter(categoryAdapter2);
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {

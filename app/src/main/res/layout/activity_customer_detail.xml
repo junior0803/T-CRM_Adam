@@ -147,6 +147,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:hint="@string/date_form_created"
+                    android:enabled="false"
                     android:maxLines="1"
                     android:singleLine="true"
                     android:layout_weight="1"/>
@@ -158,6 +159,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/date_form_updated"
                     android:maxLines="1"
+                    android:enabled="false"
                     android:singleLine="true"
                     android:editable="false"
                     android:layout_weight="1"/>

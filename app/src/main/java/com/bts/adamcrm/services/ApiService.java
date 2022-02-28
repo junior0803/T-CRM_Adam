@@ -1,21 +1,17 @@
 package com.bts.adamcrm.services;
 
 import com.bts.adamcrm.model.Category;
+import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.StockItem;
-import com.bts.adamcrm.model.User;
 
-import org.w3c.dom.Comment;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.Field;
-import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
@@ -29,7 +25,7 @@ public interface ApiService {
 
     @FormUrlEncoded
     @POST("auth/login")
-    Call<User> logIn(@Field("data[email]") String email,@Field("data[password]") String password);
+    Call<ResponseBody> logIn(@Field("data[email]") String email,@Field("data[password]") String password);
 
     // Category Management
     @GET("api/categoryList")
@@ -66,6 +62,31 @@ public interface ApiService {
     Call <ResponseBody> uploadCustomerAttach();
 
     @GET("/api/partsList/{type}/{is_shop}")
-    Call <List<StockItem>> getItemList(@Path("type") int type,
-                                       @Path("is_shop") int is_shop);
+    Call <List<StockItem>> getPartItemList(@Path("type") int type,
+                                           @Path("is_shop") int is_shop);
+
+    // Customer
+    @POST("customerList")
+    Call <List<Customer>> getAllCustomerList();
+
+    @FormUrlEncoded
+    @POST("customerList")
+    Call <List<Customer>> getCustomerList(@Field("title") String title, @Field("state") int state, @Field("category") int category
+            , @Field("date_from") String date_from, @Field("date_to") String date_to);
+
+    @FormUrlEncoded
+    @POST("insertCustomer")
+    Call <ResponseBody> insertCustomer(@Field("data[title]") String title, @Field("data[mobile_phone]") String mobile,
+                                       @Field("data[email]") String email, @Field("data[name]") String name, @Field("data[address]") String address,
+                                       @Field("data[town]") String town, @Field("data[postal_code]") String postal, @Field("data[further_note]") String further_note,
+                                       @Field("data[state]") int state, @Field("data[remind_date]") String remind, @Field("data[category_id]") int category,
+                                       @Field("data[sms_sent]") int sms_sent, @Field("data[attached_files]") String attached_files);
+
+    @FormUrlEncoded
+    @POST("updateCustomer/{id}")
+    Call <ResponseBody> updateCustomer(@Path("id")int id, @Field("data[title]") String title, @Field("data[mobile_phone]") String mobile,
+                                       @Field("data[email]") String email, @Field("data[name]") String name, @Field("data[address]") String address,
+                                       @Field("data[town]") String town, @Field("data[postal_code]") String postal, @Field("data[further_note]") String further_note,
+                                       @Field("data[state]") int state, @Field("data[remind_date]") String remind, @Field("data[category_id]") int category,
+                                       @Field("data[sms_sent]") int sms_sent, @Field("data[attached_files]") String attached_files);
 }
