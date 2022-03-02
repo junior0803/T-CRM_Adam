@@ -16,7 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class Attachment3Adapter extends RecyclerView.Adapter<Attachment3Adapter.ViewHolder> {
-    private List<Attachment> attachmentList;
+    private List<String> attachmentList;
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public long getItemId(int i) {
@@ -33,11 +33,11 @@ public class Attachment3Adapter extends RecyclerView.Adapter<Attachment3Adapter.
         }
     }
 
-    public Attachment3Adapter(List<Attachment> list) {
+    public Attachment3Adapter(List<String> list) {
         this.attachmentList = list;
     }
 
-    public void updateAdapter(List<Attachment> list) {
+    public void updateAdapter(List<String> list) {
         this.attachmentList = list;
         notifyDataSetChanged();
     }
@@ -48,7 +48,7 @@ public class Attachment3Adapter extends RecyclerView.Adapter<Attachment3Adapter.
     }
 
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        viewHolder.txt_name.setText(this.attachmentList.get(i).getName());
+        viewHolder.txt_name.setText(this.attachmentList.get(i));
     }
 
     @Override

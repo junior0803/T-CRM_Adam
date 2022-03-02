@@ -17,6 +17,9 @@ public class BaseActivity extends AppCompatActivity {
     public static final int PICKER_REQUEST_CODE = 5000;
     public static final int FILE_SELECT_CODE = 1111;
     public static final int INVOICE_REQUEST_CODE = 9000;
+    public static final String ATTACH_FILE_URI = "http://10.10.11.153:8000/uploads/";
+    public static final String LOGO_FILE_URI = ATTACH_FILE_URI + "invoice/";
+    public static final String INVOICE_PDF_URI = "http://10.10.11.153:8000/pdfInvoiceExport/";
 
     public static ApiRepository apiRepository;
 

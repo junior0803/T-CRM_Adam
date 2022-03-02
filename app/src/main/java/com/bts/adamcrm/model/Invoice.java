@@ -3,13 +3,11 @@ package com.bts.adamcrm.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
 public class Invoice {
 
     @SerializedName("id")
     @Expose
-    public String id;
+    public int id;
     @SerializedName("invoice_no")
     @Expose
     public String invoice_no;
@@ -32,7 +30,7 @@ public class Invoice {
     @Expose
     //public List<InvoiceItem> items;
     public String items;
-    @SerializedName("exclude_vat")
+    @SerializedName("excluding_vat")
     @Expose
     public String exclude_vat;
     @SerializedName("vat_amount")
@@ -56,6 +54,12 @@ public class Invoice {
     @SerializedName("customer_id")
     @Expose
     public String customer_id;
+    @SerializedName("preset1")
+    @Expose
+    public String preset1;
+    @SerializedName("preset2")
+    @Expose
+    public String preset2;
     @SerializedName("created_at")
     @Expose
     public String created_at;
@@ -63,10 +67,12 @@ public class Invoice {
     @Expose
     public String updated_at;
 
-    public Invoice() {
+    public Invoice(){
     }
 
-    public Invoice(String id, String invoice_no, String email, String invoice_date, String mobile_num, String to, String from_address, String items, String exclude_vat, String vat_amount, String invoice_total, String payed_amount, String due_total, String comment) {
+    public Invoice(int id, String invoice_no, String email, String invoice_date, String mobile_num,
+                   String to, String from_address, String items, String exclude_vat, String vat_amount,
+                   String invoice_total, String payed_amount, String due_total, String comment, String customer_id, String logo1, String logo2, String created_at, String updated_at) {
         this.id = id;
         this.invoice_no = invoice_no;
         this.email = email;
@@ -81,13 +87,18 @@ public class Invoice {
         this.payed_amount = payed_amount;
         this.due_total = due_total;
         this.comment = comment;
+        this.customer_id = customer_id;
+        this.preset1 = logo1;
+        this.preset2 = logo2;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -201,6 +212,22 @@ public class Invoice {
 
     public void setCustomer_id(String customer_id) {
         this.customer_id = customer_id;
+    }
+
+    public String getLogo1() {
+        return preset1;
+    }
+
+    public void setLogo1(String logo1) {
+        this.preset1 = logo1;
+    }
+
+    public String getLogo2() {
+        return preset2;
+    }
+
+    public void setLogo2(String logo2) {
+        this.preset2 = logo2;
     }
 
     public String getCreated_at() {

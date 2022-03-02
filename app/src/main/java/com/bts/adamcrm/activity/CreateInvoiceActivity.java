@@ -1,39 +1,49 @@
 package com.bts.adamcrm.activity;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
-import android.service.dreams.DreamService;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.TimePicker;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
-import com.bts.adamcrm.adapter.InvoiceAdapter;
 import com.bts.adamcrm.adapter.InvoiceItemAdapter;
 import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.InvoiceItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.opensooq.supernova.gligar.GligarPicker;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CreateInvoiceActivity extends BaseActivity implements View.OnClickListener {
 
@@ -78,6 +88,12 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     InvoiceItemAdapter invoiceItemAdapter;
     List<InvoiceItem> invoiceItemList = new ArrayList<>();
     int fileindex = 1;
+    private Calendar calendar;
+    private int mDay;
+    private int mHour;
+    private int mMinute;
+    private int mMonth;
+    private int mYear;
 
     @BindView(R.id.invoice_recycler)
     RecyclerView invoice_recycler;
@@ -107,61 +123,60 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
             edt_mobile.setText(sharedPreferencesManager.getStringValue("mobile"));
             edt_email.setText(sharedPreferencesManager.getStringValue("email"));
         } else {
-////            invoice = new Gson().fromJson(str_invoice, Invoice.class);
-////            if (invoice.getFile_address() != null)
-////                logoFile = new File(invoice.getFile_address());
-////            if (invoice.getFile_address2() != null)
-////                logoFile2 = new File(invoice.getFile_address2());
-////
-////            if (logoFile != null && logoFile.exists()) {
-////                btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
-////            } else {
-////                invoice.setFile("");
-////                invoice.setFile_address("");
-////                logoFile = null;
-////            }
-////
-////            if (logoFile2 != null && logoFile2.exists()){
-////                btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
-////            } else {
-////                invoice.setFile2("");
-////                invoice.setFile_address2("");
-////                logoFile2 = null;
-////            }
-////
-////            if (!sharedPreferencesManager.getStringValue("logo").equals("")){
-////                logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
-////                if (logoFile.exists()){
-////                    btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
-////                } else {
-////                    invoice.setFile("");
-////                    invoice.setFile_address("");
-////                    logoFile = null;
-////                }
-////            }
-////            if (!sharedPreferencesManager.getStringValue("logo2").equals("")){
-////                logoFile2 = new File(sharedPreferencesManager.getStringValue("logo2"));
-////                if (logoFile2.exists()){
-////                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
-////                } else {
-////                    invoice.setFile2("");
-////                    invoice.setFile_address2("");
-////                    logoFile2 = null;
-////                }
-////            }
-//            edt_invoice_no.setText(invoice.getInvoice_no());
-//            edt_email.setText(invoice.getEmail());
-//            edt_invoice_date.setText(invoice.getInvoice_date());
-//            edt_mobile.setText(invoice.getMobile_no());
-//            edt_address.setText(invoice.getAddress());
-//            edt_company.setText(invoice.getEdt_company());
-//            invoiceItemList = invoice.getInvoiceItemList();
-//            edt_exclude_vat.setText(invoice.getExclude_vat());
-//            edt_vat_amount.setText(invoice.getVat_amount());
-//            edt_invoice_total.setText(invoice.getInclude_total());
-//            edt_payed_amount.setText(invoice.getPayed_amount());
-//            edt_due_total.setText(invoice.getDue_total());
-//            edt_comment.setText(invoice.getComment());
+            invoice = new Gson().fromJson(str_invoice, Invoice.class);
+            if (invoice.getLogo1() != null)
+                logoFile = new File(invoice.getLogo1());
+            if (invoice.getLogo2() != null)
+                logoFile2 = new File(invoice.getLogo2());
+
+            if (logoFile != null && logoFile.exists()) {
+                btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+            } else {
+                invoice.setLogo1("");
+                logoFile = null;
+            }
+
+            if (logoFile2 != null && logoFile2.exists()){
+                btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+            } else {
+                invoice.setLogo2("");
+                logoFile2 = null;
+            }
+
+            if (!sharedPreferencesManager.getStringValue("logo").equals("")){
+                logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
+                if (logoFile.exists()){
+                    btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+                } else {
+                    invoice.setLogo1("");
+                    logoFile = null;
+                }
+            }
+            if (!sharedPreferencesManager.getStringValue("logo2").equals("")){
+                logoFile2 = new File(sharedPreferencesManager.getStringValue("logo2"));
+                if (logoFile2.exists()){
+                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+                } else {
+                    invoice.setLogo2("");
+                    logoFile2 = null;
+                }
+            }
+            edt_invoice_no.setText(invoice.getInvoice_no());
+            edt_email.setText(invoice.getEmail());
+            edt_invoice_date.setText(invoice.getInvoice_date());
+            edt_mobile.setText(invoice.getMobile_num());
+            edt_address.setText(invoice.getTo());
+            edt_company.setText(invoice.getFrom_address());
+            Log("invoiceitem : " + invoice.getItems());
+            //invoiceItemList = new Gson().fromJson(invoice.getItems(), InvoiceItem.class);
+            Type type  = new TypeToken<ArrayList<InvoiceItem>>(){}.getType();
+            invoiceItemList = new Gson().fromJson(invoice.getItems(), type);
+            edt_exclude_vat.setText(invoice.getExclude_vat());
+            edt_vat_amount.setText(invoice.getVat_amount());
+            edt_invoice_total.setText(invoice.getInvoice_total());
+            edt_payed_amount.setText(invoice.getPayed_amount());
+            edt_due_total.setText(invoice.getDue_total());
+            edt_comment.setText(invoice.getComment());
         }
         btn_back.setOnClickListener(this);
         btn_add_item.setOnClickListener(this);
@@ -169,16 +184,17 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         btn_select_logo.setOnClickListener(this);
         btn_select_logo2.setOnClickListener(this);
         btn_save.setOnClickListener(this);
+        edt_invoice_date.setOnClickListener(this);
         invoiceItemAdapter = new InvoiceItemAdapter((invoiceItemList));
         invoice_recycler.setAdapter(invoiceItemAdapter);
         invoiceItemAdapter.updateAdapter(invoiceItemList);
-        invoice_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+        invoice_recycler.addOnItemTouchListener(new RecyclerItemClickListener(CreateInvoiceActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
                 view.findViewById(R.id.action_remove).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Dialog dialog = new Dialog(getBaseContext());
+                        Dialog dialog = new Dialog(CreateInvoiceActivity.this);
                         dialog.requestWindowFeature(1);
                         dialog.setContentView(R.layout.dialog_delete_item);
                         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
@@ -213,10 +229,13 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 exit();
                 break;
             case R.id.btn_create_pdf:
-                showToast("create pdf");
+                createPdf();
                 break;
             case R.id.btn_save:
                 save();
+                break;
+            case R.id.edt_invoice_date:
+                showInvoice_date();
                 break;
             case R.id.btn_select_logo:
                 fileindex = 1;
@@ -228,6 +247,49 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 break;
         }
     }
+
+    private void createPdf() {
+        if (str_invoice.equals("")){
+            showToast("Please save invoice first!");
+        } else {
+            Intent intent = new Intent("android.intent.action.VIEW");
+            intent.setData(Uri.parse(INVOICE_PDF_URI + invoice.getId()));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+    }
+
+    private void showInvoice_date() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                mYear = i;
+                mMonth = i1 + 1;
+                mDay = i2;
+                edt_invoice_date.setText(mYear + "-" + mMonth + "-" + mDay);
+                showInvoiceTimeDialog();
+            }
+        }, mYear, mMonth, mDay).show();
+    }
+
+    private void showInvoiceTimeDialog() {
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(1);
+        mMonth = calendar.get(2);
+        mDay = calendar.get(5);
+        new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                edt_invoice_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)) + ":00");
+            }
+        }, mHour, mMinute, true).show();
+    }
+
+
     public void addInvoiceItemDialog(Activity activity) {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
@@ -257,25 +319,19 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     private void save() {
         invoice.setInvoice_no(edt_invoice_no.getText().toString());
         invoice.setInvoice_date(edt_invoice_date.getText().toString());
-//        invoice.setInclude_total(edt_invoice_total.getText().toString());
-//        invoice.setInvoiceItemList(invoiceItemList);
-//        invoice.setMobile_no(edt_mobile.getText().toString());
-//        invoice.setEmail(edt_email.getText().toString());
-//        invoice.setAddress(edt_address.getText().toString());
-//        invoice.setEdt_company(edt_company.getText().toString());
-//        if (logoFile == null){
-//            invoice.setFile_address("");
-//            invoice.setLogo("");
-//        } else {
-//            invoice.setFile_address(logoFile.getAbsolutePath());
-//        }
-//        if (logoFile2 == null){
-//            invoice.setFile_address("");
-//            invoice.setLogo("");
-//        } else {
-//            invoice.setFile_address(logoFile2.getAbsolutePath());
-//        }
-        
+        invoice.setInvoice_total(edt_invoice_total.getText().toString());
+        invoice.setItems(new Gson().toJson(invoiceItemList));
+        invoice.setMobile_num(edt_mobile.getText().toString());
+        invoice.setEmail(edt_email.getText().toString());
+        invoice.setTo(edt_address.getText().toString());
+        invoice.setFrom_address(edt_company.getText().toString());
+        if (logoFile == null){
+            invoice.setLogo1("");
+        }
+        if (logoFile2 == null){
+            invoice.setLogo2("");
+        }
+        invoice.setCustomer_id(String.valueOf(0));
         invoice.setExclude_vat(edt_exclude_vat.getText().toString());
         invoice.setVat_amount(edt_vat_amount.getText().toString());
         invoice.setDue_total(edt_due_total.getText().toString());
@@ -309,6 +365,42 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void uploadFile(File file) {
-        showToast("upload file name: " + file.getName());
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Uploading...");
+        progressDialog.show();
+
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse("*/*"),
+                file
+        );
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+
+        apiRepository.getApiService().uploadInvoiceLogo(body).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()){
+                    Log("response : " + response.body());
+                    String uploadFile = response.body();
+                    if (fileindex == 1) {
+                        invoice.setLogo1(uploadFile);
+                        sharedPreferencesManager.setStringValue("logo", logoFile.getAbsolutePath());
+                        btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+                    } else {
+                        invoice.setLogo2(uploadFile);
+                        sharedPreferencesManager.setStringValue("logo2", logoFile2.getAbsolutePath());
+                        btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+                    }
+                } else {
+                    showToast("Upload Failed! please try again...");
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+                progressDialog.show();
+            }
+        });
     }
 }

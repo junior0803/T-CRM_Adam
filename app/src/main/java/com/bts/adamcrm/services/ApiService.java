@@ -2,17 +2,23 @@ package com.bts.adamcrm.services;
 
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
+import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.StockItem;
+import com.google.android.gms.common.internal.HideFirstParty;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -58,8 +64,6 @@ public interface ApiService {
     @GET("/deleteParts/{id}")
     Call <ResponseBody> deletePart(@Path("id") int id);
 
-    @GET("/customer/attach_file")
-    Call <ResponseBody> uploadCustomerAttach();
 
     @GET("/api/partsList/{type}/{is_shop}")
     Call <List<StockItem>> getPartItemList(@Path("type") int type,
@@ -76,11 +80,11 @@ public interface ApiService {
 
     @FormUrlEncoded
     @POST("insertCustomer")
-    Call <ResponseBody> insertCustomer(@Field("data[title]") String title, @Field("data[mobile_phone]") String mobile,
+    Call <String> insertCustomer(@Field("data[title]") String title, @Field("data[mobile_phone]") String mobile,
                                        @Field("data[email]") String email, @Field("data[name]") String name, @Field("data[address]") String address,
                                        @Field("data[town]") String town, @Field("data[postal_code]") String postal, @Field("data[further_note]") String further_note,
                                        @Field("data[state]") int state, @Field("data[remind_date]") String remind, @Field("data[category_id]") int category,
-                                       @Field("data[sms_sent]") int sms_sent, @Field("data[attached_files]") String attached_files);
+                                       @Field("data[sms_sent]") int sms_sent, @Field("data[attached_files]") String attached_files, @Field("data[created_at]") String created_time);
 
     @FormUrlEncoded
     @POST("updateCustomer/{id}")
@@ -89,4 +93,33 @@ public interface ApiService {
                                        @Field("data[town]") String town, @Field("data[postal_code]") String postal, @Field("data[further_note]") String further_note,
                                        @Field("data[state]") int state, @Field("data[remind_date]") String remind, @Field("data[category_id]") int category,
                                        @Field("data[sms_sent]") int sms_sent, @Field("data[attached_files]") String attached_files);
+
+    @Multipart
+    @POST("customer/attach_file")
+    Call <String> uploadCustomerAttach(@Part MultipartBody.Part file);
+
+    @GET("deleteCustomer/{id}")
+    Call <String> deleteCustomer(@Path("id") int id);
+
+    @GET("getInvoiceList/{id}")
+    Call <List<Invoice>> getInvoiceList(@Path("id") int customer_id);
+
+    @Multipart
+    @POST("/invoice/logo_file")
+    Call <String> uploadInvoiceLogo(@Part MultipartBody.Part file);
+
+
+    @FormUrlEncoded
+    @POST("insertInvoice")
+    Call  <ResponseBody> insertInvoice(@Field("data[invoice_no]") String invoice_no, @Field("data[email]") String email, @Field("data[invoice_date]") String date,
+                                       @Field("data[mobile_num]") String mobile, @Field("data[to]") String to, @Field("data[from_address]") String address,
+                                       @Field("data[items]") String items, @Field("data[excluding_vat]") String exclude_vat, @Field("data[vat_amount]") String amount,
+                                       @Field("data[invoice_total]") String total, @Field("data[payed_amount]") String payed, @Field("data[due_total]") String due,
+                                       @Field("data[comment]") String comment, @Field("data[customer_id]") String customer_id,
+                                       @Field("data[preset1]") String preset1, @Field("data[preset2]") String preset2,
+                                       @Field("id") int id, @Field("mode") String mode);
+
+    @GET("deleteInvoice/{id}")
+    Call <String> deleteInvoice(@Path("id") int id);
+
 }

@@ -151,13 +151,16 @@ public class FileUtils {
                 return path;
             }
         }
-        String secondaryPath = System.getenv("SECONDARY_STORAGE") + extendPath;
+        String secondaryPath = System.getenv("SECONDARY_STORAGE") + "/" + extendPath;
         if (fileExists(secondaryPath)){
             return secondaryPath;
         }
-        String externPath = System.getenv("EXTERNAL_STORAGE") + extendPath;
+        String externPath = System.getenv("EXTERNAL_STORAGE") + "/" +extendPath;
         if (fileExists(externPath))
             return extendPath;
+        String finalPath = "/storage/" + primaryPath + "/" + extendPath;
+        if (fileExists(finalPath))
+            return finalPath;
         return null;
     }
 

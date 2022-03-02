@@ -6,6 +6,7 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -35,11 +36,11 @@ import com.bts.adamcrm.adapter.AttachmentAdapter;
 import com.bts.adamcrm.adapter.CategoryAdapter2;
 import com.bts.adamcrm.adapter.InvoiceAdapter;
 import com.bts.adamcrm.adapter.InvoiceAdapter2;
-import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.receiver.AlarmReceiver;
+import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
@@ -47,15 +48,20 @@ import com.gun0912.tedpermission.normal.TedPermission;
 import com.opensooq.supernova.gligar.GligarPicker;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -115,9 +121,10 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @BindView(R.id.edt_town)
     EditText edt_town;
     String fileName;
-    InvoiceAdapter invoiceAdapter;
-    List<Invoice> invoiceList = new ArrayList();
-    List<Attachment> attachmentList = new ArrayList<>();
+
+    ArrayList<Invoice> invoiceList = new ArrayList();
+    InvoiceAdapter invoiceAdapter = new InvoiceAdapter(invoiceList);
+    ArrayList<String> attachmentList = new ArrayList<>();
     private int mDay;
     private int mHour;
     private int mMinute;
@@ -130,6 +137,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     RecyclerView recycler_invoices;
     boolean reminder = false;
     int selectedIndex = -1;
+
     Category selected_category;
     int sms_sent = 0;
     @BindView(R.id.spn_state)
@@ -142,6 +150,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     TextView txt_no_invoice;
     @BindView(R.id.txt_sms_staus)
     TextView txt_sms_staus;
+
+    int initInvoice = 0;
+    int customerID = 0;
 
     PermissionListener permissionListener = new PermissionListener() {
         @Override
@@ -217,6 +228,51 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             }
         });
     }
+
+    private void setupInvoice(int id) {
+        apiRepository.getApiService().getInvoiceList(id).enqueue(new Callback<List<Invoice>>() {
+            @Override
+            public void onResponse(Call<List<Invoice>> call, Response<List<Invoice>> response) {
+                if (response.isSuccessful() && response.body() != null){
+                    invoiceList = new ArrayList<>(response.body());
+                    if (invoiceList.size() == 0){
+                        recycler_invoices.setVisibility(View.GONE);
+                        txt_no_invoice.setVisibility(View.VISIBLE);
+                    } else {
+                        txt_no_invoice.setVisibility(View.GONE);
+                        recycler_invoices.setVisibility(View.VISIBLE);
+                        initInvoice = invoiceList.size();
+                    }
+                    invoiceAdapter.updateAdapter(invoiceList);
+                    recycler_invoices.setAdapter(invoiceAdapter);
+                }
+                recycler_invoices.addOnItemTouchListener(new RecyclerItemClickListener(CustomerDetailActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                clickInvoiceDelete(CustomerDetailActivity.this, position);
+                            }
+                        });
+                        view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                clickInvoiceView(position);
+                            }
+                        });
+                    }
+                }));
+            }
+
+            @Override
+            public void onFailure(Call<List<Invoice>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+            }
+        });
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -261,8 +317,11 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     txt_sms_staus.setText(R.string.sms_not_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
                 }
-//                if (customer.getAttachments() != null){
-//                    attachmentList = customer.getAttachments();
+                if (customer.getAttached_files() != null){
+                    String [] strings = customer.getAttached_files().replaceAll("\\[", "").replaceAll("]", "")
+                            .replaceAll("[-\\\\[\\\\]^/'*:!><~@#$%+=?|\"()]+", "").split(",");
+                    if (strings.length > 0 && !strings[0].equals(""))
+                        Collections.addAll(attachmentList, strings);
 //                    for (int i = 0; i < attachmentList.size(); i ++){
 //                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 //                        getCurrentDate();
@@ -275,23 +334,14 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 //                            e.printStackTrace();
 //                        }
 //                    }
-//                }
-//                if (customer.getInvoices() != null){
-//                    invoiceList = customer.getInvoices();
-//                }
+                }
+
+                setupInvoice(customer.getId());
             }
         }
         attachmentAdapter  = new AttachmentAdapter(attachmentList);
         recycler_attachments.setAdapter(attachmentAdapter);
-        invoiceAdapter = new InvoiceAdapter(invoiceList);
-        recycler_invoices.setAdapter(invoiceAdapter);
-        if (attachmentList.size() == 0){
-            recycler_attachments.setVisibility(View.GONE);
-            txt_no_attachment.setVisibility(View.VISIBLE);
-        } else {
-            txt_no_attachment.setVisibility(View.GONE);
-            recycler_attachments.setVisibility(View.VISIBLE);
-        }
+
         if (invoiceList.size() == 0){
             recycler_invoices.setVisibility(View.GONE);
             txt_no_invoice.setVisibility(View.VISIBLE);
@@ -299,13 +349,23 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             txt_no_invoice.setVisibility(View.GONE);
             recycler_invoices.setVisibility(View.VISIBLE);
         }
-        recycler_attachments.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+        recycler_invoices.setAdapter(invoiceAdapter);
+
+        if (attachmentList.size() == 0){
+            recycler_attachments.setVisibility(View.GONE);
+            txt_no_attachment.setVisibility(View.VISIBLE);
+        } else {
+            txt_no_attachment.setVisibility(View.GONE);
+            recycler_attachments.setVisibility(View.VISIBLE);
+        }
+
+        recycler_attachments.addOnItemTouchListener(new RecyclerItemClickListener(CustomerDetailActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
                 view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        clickAttachDelete(getBaseContext(), position);
+                        clickAttachDelete(CustomerDetailActivity.this, position);
                     }
                 });
                 view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
@@ -314,31 +374,15 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                         clickAttachView(position);
                     }
                 });
-                view.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        clickAttachEdit(getBaseContext(), position);
-                    }
-                });
+//                view.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        clickAttachEdit(CustomerDetailActivity.this, position);
+//                    }
+//                });
             }
         }));
-        recycler_invoices.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        clickInvoiceDelete(getBaseContext(), position);
-                    }
-                });
-                view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        clickInvoiceView(position);
-                    }
-                });
-            }
-        }));
+
         title_text.setText(R.string.customer_detail);
         edt_reminder_date.setOnClickListener(this);
         btn_back.setOnClickListener(this);
@@ -362,12 +406,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         });
     }
 
-    private void clickAttachDelete(Context context, int position) {
-        Dialog dialog = new Dialog(context);
+
+    private void clickAttachDelete(Activity activity, int position) {
+        Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + this.attachmentList.get(position).getName() + " ?");
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + this.attachmentList.get(position) + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -396,25 +441,38 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void clickAttachView(int position){
         Intent intent = new Intent("android.intent.action.VIEW");
-        intent.setData(Uri.parse(attachmentList.get(position).getUrl()));
+        intent.setData(Uri.parse(ATTACH_FILE_URI + attachmentList.get(position)));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
-    private void clickAttachEdit(Context context, int position){
+    private void clickAttachEdit(Activity activity, int position){
         EditAttachmentActivity.launch(this, new Gson().toJson(attachmentList.get(position)));
     }
 
-    private void clickInvoiceDelete(Context context, int position){
-        Dialog dialog = new Dialog(context);
+    private void clickInvoiceDelete(Activity activity, int position){
+        Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        //((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete invoice " + this.invoiceList.get(position).getFile() + " ?");
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete invoice " + this.invoiceList.get(position).getInvoice_no() + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (invoiceList.size() > 0){
+                    apiRepository.getApiService().deleteInvoice(invoiceList.get(position).getId()).enqueue(new Callback<String>() {
+                        @Override
+                        public void onResponse(Call<String> call, Response<String> response) {
+                            if (response.isSuccessful() && response.body() != null){
+                                Log("response body : " + response.body());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+
+                        }
+                    });
                     invoiceList.remove(position);
                     invoiceAdapter.updateAdapter(invoiceList);
                     if (invoiceList.size() == 0){
@@ -591,7 +649,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                edt_reminder_date.setText(mDay + "/" + mMonth + "/" + mYear);
+                edt_reminder_date.setText(mYear + "-" + mMonth + "-" + mDay);
                 showReminderTimeDialog();
             }
         }, mYear, mMonth, mDay).show();
@@ -605,7 +663,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
+                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)) + ":00");
             }
         }, mHour, mMinute, true).show();
     }
@@ -726,7 +784,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     @Override
                     public void onClick(View view) {
                         Intent intent = new Intent("android.intent.action.VIEW");
-                        intent.setData(Uri.parse(attachmentList.get(position).getUrl()));
+                        intent.setData(Uri.parse(ATTACH_FILE_URI + attachmentList.get(position)));
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }
@@ -734,7 +792,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        downloadUri = Uri.parse(attachmentList.get(position).getUrl());
+                        downloadUri = Uri.parse(ATTACH_FILE_URI + attachmentList.get(position));
                         showToast("Attachment selected!");
                         dialog.dismiss();
                     }
@@ -870,35 +928,40 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             mYear = calendar.get(1);
             mMonth = calendar.get(2) + 1;
             mDay = calendar.get(5);
+            Timestamp time = new Timestamp(calendar.getTime().getTime());
 //            if (spn_state.getSelectedItemPosition() == 2){
 //                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
 //            } else {
 //                customer.setDate_completed("");
 //            }
-            customer.setDate_updated(mDay + "/" + mMonth + "/" + mYear);
-            if (!edt_date_created.getText().toString().equals("")){
-                customer.setDate_created(edt_date_created.getText().toString());
-            } else {
-                customer.setDate_created(mDay + "/" + mMonth + "/" + mYear);
+            //customer.setDate_updated(mDay + "/" + mMonth + "/" + mYear);
+            if (edt_date_created.getText().toString().equals("")){
+                customer.setDate_created(time.toString());
             }
-//            customer.setAttachments(attachmentList);
+
+            customer.setAttached_files(new Gson().toJson(attachmentList));
 //            customer.setInvoices(invoiceList);
+//            if (invoiceList.size() > 0) {
+//                saveInvoice(invoiceList);
+//            }
             // more implement...
             apiRepository.getApiService().insertCustomer(customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
                     customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
-                    customer.getAttached_files()).enqueue(new Callback<ResponseBody>() {
+                    customer.getAttached_files(), customer.getDate_created()).enqueue(new Callback<String>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                public void onResponse(Call<String> call, Response<String> response) {
                     if (response.isSuccessful() && response.body() != null){
                         showToast("Customer Saved!");
+                        customerID = Integer.parseInt(response.body());
+                        saveInvoice(invoiceList);
                         dialog.dismiss();
                         exit();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                public void onFailure(Call<String> call, Throwable t) {
                     showToast("Please Activate internet connection!");
                 }
             });
@@ -918,7 +981,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             customer.setSms_sent(sms_sent);
 
             if (reminder) {
-                customer.setReminder_date(edt_reminder_date.getText().toString());
+                customer.setReminder_date(edt_reminder_date.getText().toString() + ":00");
                 getDateAndSetupAlarm(edt_reminder_date.getText().toString());
             } else {
                 customer.setReminder_date("");
@@ -932,9 +995,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 //            } else {
 //                customer.setDate_completed("");
 //            }
-//            customer.setAttachments(attachmentList);
+            customer.setAttached_files(new Gson().toJson(attachmentList));
 //            customer.setInvoices(invoiceList);
             // more implement
+//            if (invoiceList.size() > 0) {
+//                saveInvoice(invoiceList);
+//            }
+            customerID = customer.getId();
             apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
                     customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
@@ -943,6 +1010,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful() && response.body() != null){
                         showToast("Customer Updated!");
+                        saveInvoice(invoiceList);
                     } else {
                         showToast("Update Failed");
                     }
@@ -958,11 +1026,46 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         }
     }
 
+    private void saveInvoice(ArrayList<Invoice> invoiceList) {
+        for (int i = 0; i < invoiceList.size(); i ++){
+            Invoice invoice = invoiceList.get(i);
+            Log("initInvoice : " + initInvoice + " customerID : " + customerID);
+            String mode = "";
+            int id = 0;
+            if (i < initInvoice ) {
+                mode = "update";
+                id = invoice.getId();
+            } else {
+                mode = "add";
+                id = 0;
+            }
+            apiRepository.getApiService().insertInvoice(
+                    invoice.getInvoice_no(), invoice.getEmail(), invoice.getInvoice_date(), invoice.getMobile_num() ,
+                    invoice.getTo(), invoice.getFrom_address(), invoice.getItems(), invoice.getExclude_vat(), invoice.getVat_amount(),
+                    invoice.getInvoice_total(), invoice.getPayed_amount(), invoice.getDue_total(), invoice.getComment(),
+                    String.valueOf(customerID), invoice.getLogo1(), invoice.getLogo2(), id, mode
+            ).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful() && response.body() != null){
+                        showToast("Invoice Saved Successfully!");
+                    } else {
+                        showToast("Invoice Save Failed!");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    showToast("Please Activate internet connection!");
+                }
+            });
+        }
+    }
+
     private void getDateAndSetupAlarm(String strDate) {
         try {
-            if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(strDate).getTime() >= new Date().getTime()){
-                Date date = new Date();
-                date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(strDate);
+            if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate).getTime() >= new Date().getTime()){
+                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate);
                 setupAlarm(date.getTime());
             }
         } catch (ParseException e) {
@@ -981,13 +1084,25 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-        //((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete customer " + customer.getTask_title() + " ?");
+        ((TextView) dialog.findViewById(R.id.txt)).setText("Are you sure you want to delete customer " + customer.getTitle() + " ?");
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // more implement
-                showToast("deleteItem more implement");
-                dialog.dismiss();
+                apiRepository.getApiService().deleteCustomer(customer.getId()).enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        if (response.isSuccessful() && response.body() != null){
+                            showToast("item deleted");
+                            dialog.dismiss();
+                            exit();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        showToast("Please Activate internet connection!");
+                    }
+                });
             }
         });
         dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -1040,7 +1155,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
             if (requestCode == FILE_SELECT_CODE){
-                uploadFile(new File(""));
+                uploadFile(new File(FileUtils.getPath(this, data.getData())));
             } else if (requestCode == REPICKER_REQUEST_CODE){
                 String[] strArr = data.getExtras().getStringArray("images");
                 if (strArr.length > 0 && strArr[0] != null){
@@ -1048,13 +1163,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 }
             } else if (requestCode == PICKER_REQUEST_CODE){
                 String strAttach = data.getExtras().getString("attachment");
-                boolean z = data.getExtras().getBoolean("update");
-                Attachment attachment = new Gson().fromJson(strAttach, Attachment.class);
-                if (z && selectedIndex > -1){
+                boolean update = data.getExtras().getBoolean("update");
+                //String attachment = new Gson().fromJson(strAttach);
+                if (update && selectedIndex > -1){
                     attachmentList.remove(selectedIndex);
                     selectedIndex = -1;
                 }
-                attachmentList.add(attachment);
+                //attachmentList.add(attachment);
                 attachmentAdapter.updateAdapter(attachmentList);
                 if (attachmentList.size() == 0){
                     recycler_attachments.setVisibility(View.GONE);
@@ -1065,9 +1180,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 }
             } else if (requestCode == INVOICE_REQUEST_CODE){
                 String strInvoice = data.getExtras().getString("invoice");
-                boolean z = data.getExtras().getBoolean("update");
+                boolean update = data.getExtras().getBoolean("update");
                 Invoice invoice = new Gson().fromJson(strInvoice, Invoice.class);
-                if (z && selectedIndex > -1){
+                if (update && selectedIndex > -1){
                     invoiceList.remove(selectedIndex);
                     selectedIndex = -1;
                 } else {
@@ -1087,5 +1202,40 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void uploadFile(File file) {
         showToast("upload File :" + file.getName());
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Uploading...");
+        progressDialog.show();
+
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse("*/*"),
+                file
+        );
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+
+        apiRepository.getApiService().uploadCustomerAttach(body).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()){
+                    Log("response : " + response.body());
+                    String uploadFile = response.body();
+                    attachmentList.add(uploadFile);
+                    attachmentAdapter.updateAdapter(attachmentList);
+                    if (attachmentList.size() > 0) {
+                        recycler_attachments.setVisibility(View.VISIBLE);
+                        txt_no_attachment.setVisibility(View.GONE);
+                    } else {
+                        recycler_attachments.setVisibility(View.GONE);
+                        txt_no_attachment.setVisibility(View.VISIBLE);
+                    }
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+                progressDialog.show();
+            }
+        });
     }
 }

@@ -267,23 +267,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void showCustomerData() {
         visibleList = new ArrayList<>();
-        visibleList = customerList;
-//        for (int i = 0; i < customerList.size(); i ++){
-//            if (!picked_date.equals("") && !end_picked_date.equals("")){
-//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//                try {
-//                    Date date = simpleDateFormat.parse(customerList.get(i).getDate_updated());
-//                    Date pickDate = simpleDateFormat.parse(picked_date);
-//                    Date endPickDate = simpleDateFormat.parse(end_picked_date);
-//                    if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
-//                        if (selected_category == null){
-//                            if (selectedState == 0){
-//                                visibleList.add(customerList.get(i));
-//                            } else if (customerList.get(i).getState() == selectedState){
-//                                visibleList.add(customerList.get(i));
-//                            }
-//                        }
-//                    } else if (selected_category.getName().equals(R.string.all_categories)){
+        //visibleList = customerList;
+        for (int i = 0; i < customerList.size(); i ++){
+            Log("showCustomerData size : " + customerList.size());
+            Log("showCustomerData picked_date : " + picked_date
+                    + " end_picked_date : " + end_picked_date);
+            if (!picked_date.equals("") || !end_picked_date.equals("")){
+
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                try {
+                    Date date = simpleDateFormat.parse(customerList.get(i).getDate_updated());
+                    Date pickDate = simpleDateFormat.parse(picked_date);
+                    Date endPickDate = simpleDateFormat.parse(end_picked_date);
+                    if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
+                        if (selected_category == null
+                                || selected_category.getName().equals("All Categories")
+                                || selected_category.getId() == customerList.get(i).getCategory_id()){
+                            Log("All Category");
+                            if (selectedState == 4 && customerList.get(i).getReminder_date() != null){
+                                visibleList.add(customerList.get(i));
+                            } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
+                                visibleList.add(customerList.get(i));
+                            }
+                        }
+                    }
+//                    else if (selected_category.getName().equals(R.string.all_categories)){
 //                        if (selectedState == 0){
 //                            visibleList.add(customerList.get(i));
 //                        } else if (customerList.get(i).getState() == selectedState){
@@ -296,21 +304,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 //                            visibleList.add(customerList.get(i));
 //                        }
 //                    }
-//                } catch (ParseException e) {
-//                    e.printStackTrace();
-//                }
-//            } else if (customerList.get(i).getCategory_id() != 0){
-//                if (selected_category.getName().equals(categoryList.get(customerList.get(i).getCategory_id()).getName())){
-//                    if (selectedState == 4){
-//                        if (customerList.get(i).getReminder_date() != null)
-//                            visibleList.add(customerList.get(i));
-//                    } else if (selectedState == 0 || customerList.get(i).getState() == selectedState)
-//                        visibleList.add(customerList.get(i));
-//                }
-//            }
-            customerAdapter.updateAdapter(visibleList);
-            txt_count.setText("Count : " + visibleList.size());
-        //}
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log("showCustomerData case 1 selected_category : " + selected_category);
+                if (selected_category == null
+                        || selected_category.getName().equals("All Categories")
+                        || selected_category.getId() == customerList.get(i).getCategory_id()){
+                    Log("All Category");
+                    if (selectedState == 4 && customerList.get(i).getReminder_date() != null){
+                        visibleList.add(customerList.get(i));
+                    } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
+                        visibleList.add(customerList.get(i));
+                    }
+                }
+            }
+        }
+        customerAdapter.updateAdapter(visibleList);
+        txt_count.setText("Count : " + visibleList.size());
     }
 
     private void setupCurrentDate() {
@@ -357,7 +369,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 Log(response.raw().toString());
                 if (response.body() != null) {
                     categoryList = new ArrayList<>();
-                    Category category = new Category("All Category");
+                    Category category = new Category(getString(R.string.all_categories));
                     categoryList.add(category);
                     selected_category = category;
                     Log("size : "+ response.body().size());
@@ -513,12 +525,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 CustomerDetailActivity.launch(this);
                 break;
             case R.id.btn_sync:
-                loadingProgress.setTitle(R.string.sync_data);
-                loadingProgress.show();
-                visibleList = customerAdapter.getCustomerList();
-//                for (int i = 0; i < visibleList.size(); i ++){
-//                    visibleList.get(i).setSort(i);
-//                }
+                loadCategories();
+                loadAllData();
                 break;
             case R.id.action_search:
                 if (search_wrapper.getVisibility() == View.VISIBLE){

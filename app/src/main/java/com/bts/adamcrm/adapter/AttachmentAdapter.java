@@ -14,7 +14,7 @@ import butterknife.Unbinder;
 import butterknife.internal.Utils;
 
 public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.ViewHolder> {
-    private List<Attachment> attachmentList;
+    private List<String> attachmentList;
 
     @Override
     public long getItemId(int i) {
@@ -31,11 +31,11 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
         }
     }
 
-    public AttachmentAdapter(List<Attachment> list) {
+    public AttachmentAdapter(List<String> list) {
         this.attachmentList = list;
     }
 
-    public void updateAdapter(List<Attachment> list) {
+    public void updateAdapter(List<String> list) {
         this.attachmentList = list;
         notifyDataSetChanged();
     }
@@ -46,9 +46,9 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
     }
 
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        Attachment attachment = this.attachmentList.get(i);
+        String attachment = this.attachmentList.get(i);
         TextView textView = viewHolder.txt_name;
-        textView.setText(attachment.getName() + "  -  ( will be deleted on: " + attachment.getDate_delete() + " )");
+        textView.setText(attachment);
     }
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter
