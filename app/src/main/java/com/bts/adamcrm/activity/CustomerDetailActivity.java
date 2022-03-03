@@ -298,7 +298,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_post_code.setText(customer.getPostal_code());
                 edt_date_created.setText(customer.getDate_created());
                 edt_date_updated.setText(customer.getDate_updated());
-                edt_reminder_date.setText(customer.getReminder_date());
                 edt_further_none.setText(customer.getFurther_note());
 
                 edt_reminder_date.setEnabled(false);
@@ -497,7 +496,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void clickInvoiceView(int position){
         selectedIndex = position;
-        CreateInvoiceActivity.launch(this, new Gson().toJson(invoiceList.get(position)));
+        if (position >= 0)
+            CreateInvoiceActivity.launch(this, new Gson().toJson(invoiceList.get(position)));
     }
 
     public void showSelectorDialog(Activity activity) {
@@ -649,7 +649,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                edt_reminder_date.setText(mYear + "-" + mMonth + "-" + mDay);
+                edt_reminder_date.setText(mYear + "-"
+                        + String.format("%02d-%02d", Integer.valueOf(mMonth), Integer.valueOf(mDay)));
                 showReminderTimeDialog();
             }
         }, mYear, mMonth, mDay).show();
@@ -663,7 +664,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)) + ":00");
+                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
             }
         }, mHour, mMinute, true).show();
     }
@@ -981,7 +982,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             customer.setSms_sent(sms_sent);
 
             if (reminder) {
-                customer.setReminder_date(edt_reminder_date.getText().toString() + ":00");
+                customer.setReminder_date(edt_reminder_date.getText().toString());
                 getDateAndSetupAlarm(edt_reminder_date.getText().toString());
             } else {
                 customer.setReminder_date("");
@@ -1185,18 +1186,18 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 if (update && selectedIndex > -1){
                     invoiceList.remove(selectedIndex);
                     selectedIndex = -1;
+                }
+                invoiceList.add(invoice);
+                invoiceAdapter.updateAdapter(invoiceList);
+                if (invoiceList.size() == 0){
+                    recycler_invoices.setVisibility(View.GONE);
+                    txt_no_invoice.setVisibility(View.VISIBLE);
                 } else {
-                    invoiceList.add(invoice);
-                    invoiceAdapter.updateAdapter(invoiceList);
-                    if (invoiceList.size() == 0){
-                        recycler_invoices.setVisibility(View.GONE);
-                        txt_no_invoice.setVisibility(View.VISIBLE);
-                    } else {
-                        recycler_invoices.setVisibility(View.VISIBLE);
-                        txt_no_invoice.setVisibility(View.GONE);
-                    }
+                    recycler_invoices.setVisibility(View.VISIBLE);
+                    txt_no_invoice.setVisibility(View.GONE);
                 }
             }
+
         }
     }
 

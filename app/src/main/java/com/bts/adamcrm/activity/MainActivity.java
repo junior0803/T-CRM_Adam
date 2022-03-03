@@ -413,7 +413,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                 getDateAndSetupAlarm(customer.getReminder_date());
                             }
                             try {
-                                if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(customer.getReminder_date()).getTime() <= new Date().getTime()) {
+                                if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(customer.getReminder_date()).getTime() <= new Date().getTime()) {
                                     str_reminder = str_reminder + customer.getTitle() + " <br>";
                                 }
                             } catch (ParseException e) {
@@ -442,11 +442,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     public void getDateAndSetupAlarm(String str) {
+
         try {
-            if (new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(str).getTime() >= new Date().getTime()) {
+            Log("reminder : " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str).getTime() + " current Time : " + new Date().getTime());
+            if (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str).getTime() >= new Date().getTime()) {
                 Date date = new Date();
                 try {
-                    date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(str);
+                    date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }

@@ -185,7 +185,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         btn_select_logo2.setOnClickListener(this);
         btn_save.setOnClickListener(this);
         edt_invoice_date.setOnClickListener(this);
-        invoiceItemAdapter = new InvoiceItemAdapter((invoiceItemList));
+        invoiceItemAdapter = new InvoiceItemAdapter(invoiceItemList);
         invoice_recycler.setAdapter(invoiceItemAdapter);
         invoiceItemAdapter.updateAdapter(invoiceItemList);
         invoice_recycler.addOnItemTouchListener(new RecyclerItemClickListener(CreateInvoiceActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
@@ -213,6 +213,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                                 dialog.dismiss();
                             }
                         });
+                        dialog.show();
                     }
                 });
             }
@@ -270,7 +271,8 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                edt_invoice_date.setText(mYear + "-" + mMonth + "-" + mDay);
+                edt_invoice_date.setText(mYear + "-"
+                        + String.format("%02d-%02d", Integer.valueOf(mMonth), Integer.valueOf(mDay)));
                 showInvoiceTimeDialog();
             }
         }, mYear, mMonth, mDay).show();
@@ -284,7 +286,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                edt_invoice_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)) + ":00");
+                edt_invoice_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
             }
         }, mHour, mMinute, true).show();
     }
