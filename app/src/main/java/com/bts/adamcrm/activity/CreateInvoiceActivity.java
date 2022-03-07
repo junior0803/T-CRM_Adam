@@ -385,11 +385,11 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                     String uploadFile = response.body();
                     if (fileindex == 1) {
                         invoice.setLogo1(uploadFile);
-                        sharedPreferencesManager.setStringValue("logo", logoFile.getAbsolutePath());
+                        //sharedPreferencesManager.setStringValue("logo", logoFile.getAbsolutePath());
                         btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
                     } else {
                         invoice.setLogo2(uploadFile);
-                        sharedPreferencesManager.setStringValue("logo2", logoFile2.getAbsolutePath());
+                        //sharedPreferencesManager.setStringValue("logo2", logoFile2.getAbsolutePath());
                         btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
                     }
                 } else {
