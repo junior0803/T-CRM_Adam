@@ -1,5 +1,7 @@
 package com.bts.adamcrm.services;
 
+import static com.bts.adamcrm.BaseActivity.BASIC_URL;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -22,7 +24,7 @@ public final class ApiRepository {
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.10.11.153:8000/")
+                .baseUrl(BASIC_URL)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
