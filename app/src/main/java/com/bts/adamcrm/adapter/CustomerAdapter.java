@@ -53,7 +53,6 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHo
                 return filterResults;
             }
 
-            /* access modifiers changed from: protected */
             public void publishResults(CharSequence charSequence, Filter.FilterResults filterResults) {
                 filteredData = (ArrayList) filterResults.values;
                 notifyDataSetChanged();
@@ -61,7 +60,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHo
         };
     }
 
-    @Override // xyz.client.t_crm.helper.ItemTouchHelperAdapter
+    @Override
     public void onItemDismiss(int i) {
         filteredData.remove(i);
         notifyItemRemoved(i);

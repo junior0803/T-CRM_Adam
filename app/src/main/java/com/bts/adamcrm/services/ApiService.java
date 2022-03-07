@@ -53,21 +53,20 @@ public interface ApiService {
     @POST("insertParts")
     Call <ResponseBody> createPart(@Field("data[q]") String quantity, @Field("data[mq]") String min_quantity,
                                    @Field("data[description]") String des, @Field("data[pno]") String pno,
-                                   @Field("data[is_shopping]") int code,  @Field("data[type]") int type);
+                                   @Field("data[type]") int code, @Field("data[is_shopping]") int type);
 
     @FormUrlEncoded
     @POST("updateParts")
     Call <ResponseBody> updatePart(@Field("id") int id, @Field("data[q]") String quantity, @Field("data[mq]") String min_quantity,
                                    @Field("data[description]") String des, @Field("data[pno]") String pno,
-                                   @Field("data[is_shopping]") int code,  @Field("data[type]") int type);
+                                   @Field("data[type]") int code,  @Field("data[is_shopping]") int type);
 
     @GET("/deleteParts/{id}")
     Call <ResponseBody> deletePart(@Path("id") int id);
 
 
     @GET("/api/partsList/{type}/{is_shop}")
-    Call <List<StockItem>> getPartItemList(@Path("type") int type,
-                                           @Path("is_shop") int is_shop);
+    Call <List<StockItem>> getPartItemList(@Path("is_shop") int is_shop, @Path("type") int type);
 
     // Customer
     @POST("customerList")

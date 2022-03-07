@@ -57,7 +57,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         ButterKnife.bind(this);
         this.progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
         this.btn_login.setOnClickListener(this);
-        this.name.setOnClickListener(this);
+        //this.name.setOnClickListener(this);
     }
 
     @Override

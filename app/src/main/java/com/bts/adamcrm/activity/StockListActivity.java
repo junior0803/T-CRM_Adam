@@ -46,12 +46,12 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
     RecyclerView stock_recycler;
     @BindView(R.id.title_text)
     TextView title_text;
+    int is_shopping = 1;
     int type = 1;
-    int code = 1;
 
-    public static void launch(Activity activity, int code, int type) {
+    public static void launch(Activity activity, int is_shopping, int type) {
         Intent intent = new Intent(activity.getBaseContext(), StockListActivity.class);
-        intent.putExtra("code", code);
+        intent.putExtra("is_shopping", is_shopping);
         intent.putExtra("type", type);
         activity.startActivity(intent);
     }
@@ -61,14 +61,14 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_list);
         ButterKnife.bind(this);
+        is_shopping = getIntent().getIntExtra("is_shopping", 1);
         type = getIntent().getIntExtra("type", 1);
-        code = getIntent().getIntExtra("code", 1);
         btn_back.setOnClickListener(this);
         btn_add.setOnClickListener(this);
-        if (type == 1) {
-            title_text.setText("Parts List " + code);
+        if (is_shopping != 1) {
+            title_text.setText("Parts List " + type);
         } else {
-            title_text.setText("Shopping List " + code);
+            title_text.setText("Shopping List " + type);
         }
 
         progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
@@ -104,7 +104,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
 
     private void loadAllData() {
         progressDialog.show();
-        apiRepository.getApiService().getPartItemList(type, code).enqueue(new Callback<List<StockItem>>() {
+        apiRepository.getApiService().getPartItemList(is_shopping, type).enqueue(new Callback<List<StockItem>>() {
             @Override
             public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
                 if (response.isSuccessful() && response.body() != null){
@@ -153,7 +153,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 apiRepository.getApiService().updatePart(stockItem.getId(), edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
-                        , edtDescription.getText().toString(), edtPno.getText().toString(), code, type).enqueue(new Callback<ResponseBody>() {
+                        , edtDescription.getText().toString(), edtPno.getText().toString(), type, is_shopping).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null){
@@ -250,9 +250,9 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                 s.setQuantity(editQuantity.getText().toString());
                 s.setMinimum_quantity(editMinQuantity.getText().toString());
                 s.setType(type);
-                s.setIs_shopping(code);
+                s.setIs_shopping(is_shopping);
                 apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
-                         s.getPno(), s.getIs_shopping(), s.getType()).enqueue(new Callback<ResponseBody>() {
+                         s.getPno(), s.getType(), s.getIs_shopping()).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null){

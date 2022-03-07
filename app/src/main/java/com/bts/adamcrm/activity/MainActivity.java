@@ -50,6 +50,7 @@ import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
 import com.bts.adamcrm.receiver.AlarmReceiver;
+import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.gun0912.tedpermission.PermissionListener;
@@ -67,6 +68,10 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -269,21 +274,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         visibleList = new ArrayList<>();
         //visibleList = customerList;
         for (int i = 0; i < customerList.size(); i ++){
-            Log("showCustomerData size : " + customerList.size());
-            Log("showCustomerData picked_date : " + picked_date
-                    + " end_picked_date : " + end_picked_date);
             if (!picked_date.equals("") || !end_picked_date.equals("")){
-
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat datePickerFormat = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
-                    Date date = simpleDateFormat.parse(customerList.get(i).getDate_updated());
-                    Date pickDate = simpleDateFormat.parse(picked_date);
-                    Date endPickDate = simpleDateFormat.parse(end_picked_date);
+                    Date date = new Date();
+                    if (customerList.get(i).getDate_updated() != null)
+                        date = dateFormat.parse(customerList.get(i).getDate_updated());
+                    else
+                        date = dateFormat.parse(customerList.get(i).getDate_created());
+
+                    Date pickDate = datePickerFormat.parse(picked_date);
+                    Date endPickDate = datePickerFormat.parse(end_picked_date);
+                    Log("date : " + date + " pickDate : " + pickDate + " endDate" + endPickDate);
                     if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
                         if (selected_category == null
                                 || selected_category.getName().equals("All Categories")
                                 || selected_category.getId() == customerList.get(i).getCategory_id()){
-                            Log("All Category");
                             if (selectedState == 4 && customerList.get(i).getReminder_date() != null){
                                 visibleList.add(customerList.get(i));
                             } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
@@ -493,17 +500,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             if (i == 1) {
                 CategoryActivity.launch(this);
             } else if (i == 2) {
-                StockListActivity.launch(this, 1, 1);
+                StockListActivity.launch(this, 0, 1);
             } else if (i == 3) {
-                StockListActivity.launch(this, 1, 2);
+                StockListActivity.launch(this, 1, 1);
             } else if (i == 4) {
-                StockListActivity.launch(this, 2, 1);
+                StockListActivity.launch(this, 0, 2);
             } else if (i == 5) {
-                StockListActivity.launch(this, 2, 2);
+                StockListActivity.launch(this, 1, 2);
             } else if (i == 6) {
-                StockListActivity.launch(this, 3, 1);
+                StockListActivity.launch(this, 0, 3);
             } else if (i == 7) {
-                StockListActivity.launch(this, 3, 2);
+                StockListActivity.launch(this, 1, 3);
             } else if (i == 8) {
                 startActivity(new Intent(getBaseContext(), SettingsActivity.class));
             } else if (i == 9) {
@@ -746,7 +753,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         selectedState = position;
         btn_select_state.setText(statusList.get(position).replace("Show", ""));
         sharedPreferencesManager.setStringValue("last_status", position + "");
-        loadAllData();
+        showCustomerData();
         dialog.dismiss();
     }
 
@@ -760,6 +767,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             @Override
             public void onClick(View view) {
                 resetList();
+                showToast("Sms Status Reset!");
                 dialog.dismiss();
             }
         });
@@ -777,6 +785,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             Customer customer = visibleList.get(i);
             customer.setSms_sent(0);
             // more implement
+            apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
+                    customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
+                    customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
+                    customer.getAttached_files()).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    showToast("Please Activate internet connection!");
+                }
+            });
+            showCustomerData();
         }
     }
 
@@ -910,16 +932,53 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
             if (requestCode == FILE_SELECT_CODE){
-                uploadFile(new File(""));
+                uploadFile(new File(FileUtils.getPath(this, data.getData())));
             } else if (requestCode == PICKER_REQUEST_CODE){
-                String[] strings = data.getExtras().getStringArray("images");
-                System.currentTimeMillis();
-                uploadFile(new File(strings[0]));
+                String[] strArr = data.getExtras().getStringArray("images");
+                if (strArr.length > 0 && strArr[0] != null){
+                    uploadFile(new File(strArr[0]));
+                }
             }
         }
     }
 
     private void uploadFile(File file) {
-        showToast("File upload : " + file.getName());
+
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Uploading...");
+        progressDialog.show();
+
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse("*/*"),
+                file
+        );
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+
+        apiRepository.getApiService().uploadCustomerAttach(body).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()){
+                    Log("response : " + response.body());
+                    String uploadFile = response.body();
+                    showToast("upload File :" + uploadFile);
+//                    attachmentList.add(uploadFile);
+//                    attachmentAdapter.updateAdapter(attachmentList);
+//                    if (attachmentList.size() > 0) {
+//                        recycler_attachments.setVisibility(View.VISIBLE);
+//                        txt_no_attachment.setVisibility(View.GONE);
+//                    } else {
+//                        recycler_attachments.setVisibility(View.GONE);
+//                        txt_no_attachment.setVisibility(View.VISIBLE);
+//                    }
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+                progressDialog.show();
+            }
+        });
     }
 }

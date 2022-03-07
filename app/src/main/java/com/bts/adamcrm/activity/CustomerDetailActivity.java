@@ -615,11 +615,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 if (sms_sent == 1){
                     txt_sms_staus.setText(R.string.sms_not_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_grey_700));
+                    sms_sent = 0;
                 } else {
                     txt_sms_staus.setText(R.string.sms_sent);
                     txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
+                    sms_sent = 1;
                 }
-                sms_sent = 0;
                 dialog.dismiss();
             }
         });
@@ -1219,6 +1220,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 if (response.isSuccessful()){
                     Log("response : " + response.body());
                     String uploadFile = response.body();
+                    showToast("upload File :" + uploadFile);
                     attachmentList.add(uploadFile);
                     attachmentAdapter.updateAdapter(attachmentList);
                     if (attachmentList.size() > 0) {
