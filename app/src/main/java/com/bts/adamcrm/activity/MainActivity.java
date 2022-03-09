@@ -65,6 +65,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -178,6 +179,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     public void onStart(){
         super.onStart();
+        loadCategories();
         loadAllData();
     }
 
@@ -209,8 +211,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         setupCurrentDate();
         loadUi();
-        loadCategories();
-        loadAllData();
+
         updateActiveDevices();
         // Ui component init
         toggle_button.setOnClickListener(this);
@@ -273,9 +274,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private void showCustomerData() {
         visibleList = new ArrayList<>();
         //visibleList = customerList;
+        String startTime = " 00:00:00";
+        String endTime = " 23:59:59";
         for (int i = 0; i < customerList.size(); i ++){
             if (!picked_date.equals("") || !end_picked_date.equals("")){
-                SimpleDateFormat datePickerFormat = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat datePickerFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     Date date = new Date();
@@ -284,17 +287,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     else
                         date = dateFormat.parse(customerList.get(i).getDate_created());
 
-                    Date pickDate = datePickerFormat.parse(picked_date);
-                    Date endPickDate = datePickerFormat.parse(end_picked_date);
-                    Log("date : " + date + " pickDate : " + pickDate + " endDate" + endPickDate);
-                    if (pickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()){
-                        if (selected_category == null
-                                || selected_category.getName().equals("All Categories")
-                                || selected_category.getId() == customerList.get(i).getCategory_id()){
-                            if (selectedState == 4 && customerList.get(i).getReminder_date() != null){
-                                visibleList.add(customerList.get(i));
-                            } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
-                                visibleList.add(customerList.get(i));
+                    Date StartPickDate = datePickerFormat.parse(picked_date + startTime);
+                    Date endPickDate = datePickerFormat.parse(end_picked_date + endTime);
+                    Log("date : " + date + " pickDate : " + StartPickDate + " endDate" + endPickDate);
+                    if (StartPickDate != null && endPickDate != null && date != null) {
+                        if (StartPickDate.getTime() <= date.getTime() && endPickDate.getTime() >= date.getTime()) {
+                            if (selected_category == null
+                                    || selected_category.getName().equals("All Categories")
+                                    || selected_category.getId() == customerList.get(i).getCategory_id()) {
+                                if (selectedState == 4 && customerList.get(i).getReminder_date() != null) {
+                                    visibleList.add(customerList.get(i));
+                                } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
+                                    visibleList.add(customerList.get(i));
+                                }
                             }
                         }
                     }
@@ -451,15 +456,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     public void getDateAndSetupAlarm(String str) {
 
         try {
-            Log("reminder : " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str).getTime() + " current Time : " + new Date().getTime());
-            if (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str).getTime() >= new Date().getTime()) {
+            if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str)).getTime() >= new Date().getTime()) {
                 Date date = new Date();
                 try {
                     date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                setupAlarm(date.getTime());
+                if (date != null) {
+                    setupAlarm(date.getTime());
+                }
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -824,7 +830,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 end_picked_date = "";
                 picked_date = "";
                 btn_end_date.setText("");
-                btn_start_date.setText(picked_date);
+                btn_start_date.setText("");
                 showCustomerData();
                 btn_select_period.setText(R.string.select_period);
                 dialog.dismiss();
@@ -875,7 +881,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 mMonth = i1 + 1;
                 mYear = i;
                 mDay = i2;
-                picked_date = mDay + "/" + mMonth + "/" + mYear;
+                picked_date = mMonth + "/" + mDay + "/" + mYear;
                 btn_start_date.setText(picked_date);
             }
         }, mYear, mMonth, mDay).show();
@@ -892,7 +898,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                end_picked_date = mDay + "/" + mMonth + "/" + mYear;
+                end_picked_date = mMonth + "/" + mDay + "/" + mYear;
                 btn_end_date.setText(end_picked_date);
             }
         }, mYear, mMonth, mDay).show();
