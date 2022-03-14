@@ -521,9 +521,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 startActivity(new Intent(getBaseContext(), SettingsActivity.class));
             } else if (i == 9) {
                 startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                logout();
                 exit();
             }
         }
+    }
+
+    private void logout(){
+        sharedPreferencesManager.setStringValue("edgewatch", "~xP`MR9Ha)XPU4");
+
     }
 
     @Override

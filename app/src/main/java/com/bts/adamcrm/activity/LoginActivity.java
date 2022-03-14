@@ -15,6 +15,7 @@ import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
 import com.bts.adamcrm.model.User;
 import com.bts.adamcrm.services.ApiRepository;
+import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.google.gson.Gson;
 
 import butterknife.BindView;
@@ -50,10 +51,24 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         exit();
     }
 
+    private boolean isSigned(){
+        sharedPreferencesManager = SharedPreferencesManager.getInstance(this);
+        return sharedPreferencesManager.getStringValue("edgewatch").equals("~xP`?MR9Ha)XPU4");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (isSigned()){
+            launchMain();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
         ButterKnife.bind(this);
         this.progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
         this.btn_login.setOnClickListener(this);
@@ -96,6 +111,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 Log.e("junior", "onResponse :" + response.body());
                 if (response.isSuccessful()){
+                    sharedPreferencesManager.setStringValue("edgewatch", "~xP`?MR9Ha)XPU4");
                     launchMain();
                 } else {
                     showToast("Invalid User and Password");
