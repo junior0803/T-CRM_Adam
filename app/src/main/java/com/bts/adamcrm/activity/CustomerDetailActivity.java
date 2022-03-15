@@ -151,6 +151,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @BindView(R.id.txt_sms_staus)
     TextView txt_sms_staus;
 
+    private static Activity mActivity;
     int initInvoice = 0;
     int customerID = 0;
 
@@ -178,6 +179,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         Intent intent = new Intent(activity, CustomerDetailActivity.class);
         intent.putExtra("customer", new Gson().toJson(customer));
         activity.startActivity(intent);
+        mActivity = activity;
     }
 
     public static void launch(Activity activity){
@@ -808,7 +810,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     @Override
                     public void onClick(View view) {
                         Intent intent = new Intent("android.intent.action.VIEW");
-                        //intent.setData(Uri.parse(invoiceList.get(position).getFile()));
+                        intent.setData(Uri.parse(INVOICE_PDF_URI + invoiceList.get(position).getId()));
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }
@@ -816,13 +818,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-//                        if (invoiceList.get(position).getFile() == null
-//                                || invoiceList.get(position).getFile().equals("")){
-//                            showToast("Please create invoice file first");
-//                        } else {
-//                            downloadUri = Uri.parse(invoiceList.get(position).getFile());
-//                            showToast("Attachment selected!");
-//                        }
+                        if (invoiceList.get(position).getInvoice_no() == null
+                                || invoiceList.get(position).getInvoice_no().equals("")){
+                            showToast("Please create invoice file first");
+                        } else {
+                            downloadUri = Uri.parse(INVOICE_PDF_URI + invoiceList.get(position).getId());
+                            showToast("Attachment selected!");
+                        }
                         dialog.dismiss();
                     }
                 });
@@ -958,6 +960,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                         customerID = Integer.parseInt(response.body());
                         saveInvoice(invoiceList);
                         dialog.dismiss();
+                        mActivity.finish();
+                        MainActivity.launch(CustomerDetailActivity.this);
                         exit();
                     }
                 }

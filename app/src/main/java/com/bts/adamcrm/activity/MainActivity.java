@@ -84,8 +84,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @BindView(R.id.action_search)
     ImageView action_search;
     List<Attachment2> attachment2List = new ArrayList<>();
-    @BindView(R.id.btn_attach_main)
-    Button btn_attach_main;
+//    @BindView(R.id.btn_attach_main)
+//    Button btn_attach_main;
     TextView btn_end_date;
     @BindView(R.id.btn_reminder)
     TextView btn_reminder;
@@ -177,13 +177,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     @Override
-    public void onStart(){
-        super.onStart();
-        loadCategories();
-        loadAllData();
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -211,6 +204,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         setupCurrentDate();
         loadUi();
+        loadCategories();
+        loadAllData();
 
         updateActiveDevices();
         // Ui component init
@@ -218,7 +213,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         txt_online_count.setOnClickListener(this);
         action_add.setOnClickListener(this);
         action_search.setOnClickListener(this);
-        btn_attach_main.setOnClickListener(this);
+//        btn_attach_main.setOnClickListener(this);
         btn_send_sms.setOnClickListener(this);
         btn_reset_sms.setOnClickListener(this);
         btn_select_period.setOnClickListener(this);
@@ -556,9 +551,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     search_wrapper.setVisibility(View.VISIBLE);
                 }
                 break;
-            case R.id.btn_attach_main:
-                showSelectorDialog(this);
-                break;
+//            case R.id.btn_attach_main:
+//                showSelectorDialog(this);
+//                break;
             case R.id.btn_send_sms:
                 showSendSMSDialog(this);
                 break;
