@@ -107,6 +107,7 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
                             Log("onResponse : " + response.body() + " position : " + category.getId());
                             showData();
                         }
+                        sharedPreferencesManager.setBooleanValue("update", true);
                         dialog.dismiss();
                     }
 

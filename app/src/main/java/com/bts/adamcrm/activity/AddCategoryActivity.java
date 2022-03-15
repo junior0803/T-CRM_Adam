@@ -84,6 +84,7 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
                             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                 if (response.isSuccessful() && response.body() != null){
                                     showToast("Category Created!");
+                                    sharedPreferencesManager.setBooleanValue("update", true);
                                 }
                                 progressDialog.dismiss();
                                 exit();
@@ -104,6 +105,7 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
                                         if (response.isSuccessful() && response.body() != null){
                                             showToast("Category Updated!");
                                             progressDialog.dismiss();
+                                            sharedPreferencesManager.setBooleanValue("update", true);
                                             exit();
                                         }
                                     }

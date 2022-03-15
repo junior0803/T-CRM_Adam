@@ -84,8 +84,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @BindView(R.id.action_search)
     ImageView action_search;
     List<Attachment2> attachment2List = new ArrayList<>();
-//    @BindView(R.id.btn_attach_main)
-//    Button btn_attach_main;
     TextView btn_end_date;
     @BindView(R.id.btn_reminder)
     TextView btn_reminder;
@@ -168,6 +166,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         activity.startActivity(new Intent(activity.getBaseContext(), MainActivity.class));
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (sharedPreferencesManager.getBooleanValue("update")){
+            loadCategories();
+            loadAllData();
+            sharedPreferencesManager.setBooleanValue("update", false);
+        }
+    }
+
     private void showFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -183,6 +191,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         ButterKnife.bind(this);
         loadingProgress = new ProgressDialog(this);
         sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
+        sharedPreferencesManager.setBooleanValue("update", true);
 
         Intent intent = new Intent();
         String pkgName = getPackageName();
@@ -204,8 +213,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         setupCurrentDate();
         loadUi();
-        loadCategories();
-        loadAllData();
+
+        //first boot
+
 
         updateActiveDevices();
         // Ui component init

@@ -42,6 +42,7 @@ import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
+import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
@@ -960,8 +961,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                         customerID = Integer.parseInt(response.body());
                         saveInvoice(invoiceList);
                         dialog.dismiss();
-                        mActivity.finish();
-                        MainActivity.launch(CustomerDetailActivity.this);
+                        sharedPreferencesManager.setBooleanValue("update", true);
                         exit();
                     }
                 }
@@ -1021,6 +1021,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                         showToast("Update Failed");
                     }
                     dialog.dismiss();
+                    sharedPreferencesManager.setBooleanValue("update", true);
                     exit();
                 }
 
@@ -1099,8 +1100,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     public void onResponse(Call<String> call, Response<String> response) {
                         if (response.isSuccessful() && response.body() != null){
                             showToast("item deleted");
-                            mActivity.finish();
-                            MainActivity.launch(CustomerDetailActivity.this);
+                            sharedPreferencesManager.setBooleanValue("update", true);
                             dialog.dismiss();
                             exit();
                         }
