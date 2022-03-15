@@ -1099,6 +1099,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     public void onResponse(Call<String> call, Response<String> response) {
                         if (response.isSuccessful() && response.body() != null){
                             showToast("item deleted");
+                            mActivity.finish();
+                            MainActivity.launch(CustomerDetailActivity.this);
                             dialog.dismiss();
                             exit();
                         }
