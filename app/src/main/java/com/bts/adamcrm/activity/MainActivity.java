@@ -55,7 +55,6 @@ import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
-import com.opensooq.supernova.gligar.GligarPicker;
 
 import java.io.File;
 import java.text.ParseException;
@@ -737,7 +736,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             @Override
             public void onClick(View view) {
                 // more implement
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
                 dialog.dismiss();
             }
         });

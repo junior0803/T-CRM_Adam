@@ -1,5 +1,6 @@
 package com.bts.adamcrm.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -14,7 +15,11 @@ import androidx.annotation.Nullable;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
-import com.opensooq.supernova.gligar.GligarPicker;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.normal.TedPermission;
+
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -45,6 +50,26 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
         activity.startActivity(new Intent(activity.getBaseContext(), SettingsActivity.class));
     }
 
+    PermissionListener permissionListener = new PermissionListener() {
+        @Override
+        public void onPermissionGranted() {
+            showFileChooser();
+        }
+
+        @Override
+        public void onPermissionDenied(List<String> deniedPermissions) {
+            showToast("Permission Denied\n" + deniedPermissions.toString());
+        }
+    };
+
+    public void showFileChooser(){
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        intent.addCategory("android.intent.category.OPENABLE");
+        intent.putExtra("android.intent.extra.LOCAL_ONLY", true);
+        startActivityForResult(intent, FILE_SELECT_CODE);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +98,7 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == PICKER_REQUEST_CODE){
+        if (resultCode == RESULT_OK && requestCode == FILE_SELECT_CODE){
             String [] images = data.getExtras().getStringArray("images");
             if (images.length > 0 && images[0] != null) {
                 if (logo_index == 1) {
@@ -100,10 +125,20 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
                 break;
             case R.id.btn_select_logo:
                 logo_index = 1;
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+//                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
                 break;
             case R.id.btn_select_logo2:
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+//                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
                 logo_index = 2;
                 break;
             case R.id.btn_back:

@@ -10,8 +10,13 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -24,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,9 +52,12 @@ import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
-import com.opensooq.supernova.gligar.GligarPicker;
+import com.opensooq.supernova.gligar.utils.ConstsKt;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.security.Permission;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -70,7 +79,6 @@ import retrofit2.Response;
 
 public class CustomerDetailActivity extends BaseActivity implements View.OnClickListener {
     private static final int FILE_SELECT_CODE = 1111;
-    private static final int REPICKER_REQUEST_CODE = 2000;
     AttachmentAdapter attachmentAdapter;
     @BindView(R.id.btn_add_invoice)
     Button btn_add_invoice;
@@ -122,6 +130,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @BindView(R.id.edt_town)
     EditText edt_town;
     String fileName;
+    String currentPhotoPath;
 
     ArrayList<Invoice> invoiceList = new ArrayList();
     InvoiceAdapter invoiceAdapter = new InvoiceAdapter(invoiceList);
@@ -304,11 +313,11 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_further_none.setText(customer.getFurther_note());
 
                 edt_reminder_date.setEnabled(false);
-//                if (customer.getStatus() == 4){
-//                    edt_reminder_date.setEnabled(true);
-//                }
+                if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")){
+                    edt_reminder_date.setText(customer.getReminder_date());
+                    edt_reminder_date.setEnabled(true);
+                }
                 spn_state.setSelection(customer.getState());
-                edt_reminder_date.setText(customer.getReminder_date());
                 sms_sent = customer.isSms_sent();
                 reminder = customer.getReminder_date() != null;
                 chk_remind_me.setChecked(reminder);
@@ -324,20 +333,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                             .replaceAll("[-\\\\[\\\\]^/'*:!><~@#$%+=?|\"()]+", "").split(",");
                     if (strings.length > 0 && !strings[0].equals(""))
                         Collections.addAll(attachmentList, strings);
-//                    for (int i = 0; i < attachmentList.size(); i ++){
-//                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//                        getCurrentDate();
-//                        try {
-//                            Date date = simpleDateFormat.parse(attachmentList.get(i).getDate_delete());
-//                            if (simpleDateFormat.parse(mDay + "/" + this.mMonth + "/" + this.mYear).getTime() >= date.getTime()){
-//                                attachmentList.remove(i);
-//                            }
-//                        } catch (ParseException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
                 }
-
                 setupInvoice(customer.getId());
             }
         }
@@ -376,12 +372,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                         clickAttachView(position);
                     }
                 });
-//                view.findViewById(R.id.btn_edit).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        clickAttachEdit(CustomerDetailActivity.this, position);
-//                    }
-//                });
             }
         }));
 
@@ -504,36 +494,45 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     public void showSelectorDialog(Activity activity) {
-        Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(1);
-        dialog.setContentView(R.layout.dialog_selector);
-        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // more implement
-                TedPermission.create()
-                        .setPermissionListener(permissionListener)
-                        .setDeniedMessage(R.string.permission_check_message)
-                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .check();
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new GligarPicker().requestCode(REPICKER_REQUEST_CODE).withActivity(activity).limit(1).show();
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        TedPermission.create()
+                .setPermissionListener(permissionListener)
+                .setDeniedMessage(R.string.permission_check_message)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+//        Dialog dialog = new Dialog(activity);
+//        dialog.requestWindowFeature(1);
+//        dialog.setContentView(R.layout.dialog_selector);
+//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
+//        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // more implement
+//                TedPermission.create()
+//                        .setPermissionListener(permissionListener)
+//                        .setDeniedMessage(R.string.permission_check_message)
+//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                        .check();
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+//                } else {
+//                    startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), CAMERA_REQUEST);
+//                }
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.show();
     }
 
     @Override
@@ -1163,11 +1162,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
             if (requestCode == FILE_SELECT_CODE){
-                uploadFile(new File(FileUtils.getPath(this, data.getData())));
-            } else if (requestCode == REPICKER_REQUEST_CODE){
-                String[] strArr = data.getExtras().getStringArray("images");
-                if (strArr.length > 0 && strArr[0] != null){
-                    uploadFile(new File(strArr[0]));
+                if (data != null) {
+                    Log("data : " + data.getData());
+                    uploadFile(new File(FileUtils.getPath(this, data.getData())));
                 }
             } else if (requestCode == PICKER_REQUEST_CODE){
                 String strAttach = data.getExtras().getString("attachment");
@@ -1203,9 +1200,48 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     recycler_invoices.setVisibility(View.VISIBLE);
                     txt_no_invoice.setVisibility(View.GONE);
                 }
+            } else if (requestCode == CAMERA_REQUEST){
+                Uri selectedImage = null;
+                if (data != null) {
+                     selectedImage = data.getData();
+                }
+                Log("Uri : " + selectedImage);
+                uploadFile(new File(getRealPathFromURI(selectedImage)));
             }
-
         }
+    }
+
+    public Uri getImageUri(Context context, Bitmap inImage){
+        inImage.compress(Bitmap.CompressFormat.PNG, 100, new ByteArrayOutputStream());
+        return Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), inImage,
+                "attach", null));
+    }
+
+    public String getRealPathFromURI(Uri uri){
+        Cursor cursor;
+        if (getContentResolver() == null || (cursor = getContentResolver().query(uri, null, null, null, null)) == null){
+            return "";
+        }
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(ConstsKt.PATH_COLUMN));
+        cursor.close();
+        return path;
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     private void uploadFile(File file) {

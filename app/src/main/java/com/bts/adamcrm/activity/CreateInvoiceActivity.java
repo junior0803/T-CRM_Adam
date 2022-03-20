@@ -1,5 +1,6 @@
 package com.bts.adamcrm.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -28,7 +29,8 @@ import com.bts.adamcrm.model.InvoiceItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.opensooq.supernova.gligar.GligarPicker;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.normal.TedPermission;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -107,6 +109,26 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         Intent intent = new Intent(activity.getBaseContext(), CreateInvoiceActivity.class);
         intent.putExtra("str_invoice", str);
         activity.startActivityForResult(intent, INVOICE_REQUEST_CODE);
+    }
+
+    PermissionListener permissionListener = new PermissionListener() {
+        @Override
+        public void onPermissionGranted() {
+            showFileChooser();
+        }
+
+        @Override
+        public void onPermissionDenied(List<String> deniedPermissions) {
+            showToast("Permission Denied\n" + deniedPermissions.toString());
+        }
+    };
+
+    public void showFileChooser(){
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        intent.addCategory("android.intent.category.OPENABLE");
+        intent.putExtra("android.intent.extra.LOCAL_ONLY", true);
+        startActivityForResult(intent, FILE_SELECT_CODE);
     }
 
     @Override
@@ -240,11 +262,19 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.btn_select_logo:
                 fileindex = 1;
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
                 break;
             case R.id.btn_select_logo2:
                 fileindex = 2;
-                new GligarPicker().requestCode(PICKER_REQUEST_CODE).withActivity(this).limit(1).show();
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
                 break;
         }
     }
@@ -349,7 +379,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == PICKER_REQUEST_CODE){
+        if (resultCode == RESULT_OK && requestCode == FILE_SELECT_CODE){
             if (data != null) {
                 String[] stringArray = data.getExtras().getStringArray("images");
                 if (stringArray.length > 0 && stringArray[0] != null){

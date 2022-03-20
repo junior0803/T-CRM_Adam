@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
+
 import com.opensooq.supernova.gligar.utils.ConstsKt;
 
 import java.io.File;
@@ -146,7 +147,7 @@ public class FileUtils {
         String primaryPath = pathArr[0];
         String extendPath = pathArr[1];
         if ("primary".equalsIgnoreCase(primaryPath)){
-            String path = Environment.getExternalStorageDirectory() + extendPath;
+            String path = Environment.getExternalStorageDirectory() + "/"+ extendPath;
             if (fileExists(path)){
                 return path;
             }
@@ -157,7 +158,7 @@ public class FileUtils {
         }
         String externPath = System.getenv("EXTERNAL_STORAGE") + "/" +extendPath;
         if (fileExists(externPath))
-            return extendPath;
+            return externPath;
         String finalPath = "/storage/" + primaryPath + "/" + extendPath;
         if (fileExists(finalPath))
             return finalPath;
