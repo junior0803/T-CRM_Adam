@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,14 +27,18 @@ import com.bts.adamcrm.R;
 import com.bts.adamcrm.adapter.InvoiceItemAdapter;
 import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.InvoiceItem;
+import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -144,27 +149,6 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
             edt_company.setText(sharedPreferencesManager.getStringValue("address"));
             edt_mobile.setText(sharedPreferencesManager.getStringValue("mobile"));
             edt_email.setText(sharedPreferencesManager.getStringValue("email"));
-        } else {
-            invoice = new Gson().fromJson(str_invoice, Invoice.class);
-            if (invoice.getLogo1() != null)
-                logoFile = new File(invoice.getLogo1());
-            if (invoice.getLogo2() != null)
-                logoFile2 = new File(invoice.getLogo2());
-
-            if (logoFile != null && logoFile.exists()) {
-                btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
-            } else {
-                invoice.setLogo1("");
-                logoFile = null;
-            }
-
-            if (logoFile2 != null && logoFile2.exists()){
-                btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
-            } else {
-                invoice.setLogo2("");
-                logoFile2 = null;
-            }
-
             if (!sharedPreferencesManager.getStringValue("logo").equals("")){
                 logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
                 if (logoFile.exists()){
@@ -183,6 +167,39 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                     logoFile2 = null;
                 }
             }
+        } else {
+            invoice = new Gson().fromJson(str_invoice, Invoice.class);
+            if (invoice.getLogo1() != null)
+                logoFile = new File(invoice.getLogo1());
+            if (invoice.getLogo2() != null)
+                logoFile2 = new File(invoice.getLogo2());
+
+            if (logoFile != null) {
+                Picasso.get().load(LOGO_FILE_URI + logoFile)
+                        .into(btn_select_logo);
+            } else if (!sharedPreferencesManager.getStringValue("logo").equals("")){
+                logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
+                if (logoFile.exists()){
+                    btn_select_logo.setImageDrawable(Drawable.createFromPath(logoFile.getAbsolutePath()));
+                } else {
+                    invoice.setLogo1("");
+                    logoFile = null;
+                }
+            }
+
+            if (logoFile2 != null){
+                Picasso.get().load(LOGO_FILE_URI + logoFile2)
+                        .into(btn_select_logo2);
+            } else if (!sharedPreferencesManager.getStringValue("logo2").equals("")){
+                logoFile2 = new File(sharedPreferencesManager.getStringValue("logo2"));
+                if (logoFile2.exists()){
+                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(logoFile2.getAbsolutePath()));
+                } else {
+                    invoice.setLogo2("");
+                    logoFile2 = null;
+                }
+            }
+
             edt_invoice_no.setText(invoice.getInvoice_no());
             edt_email.setText(invoice.getEmail());
             edt_invoice_date.setText(invoice.getInvoice_date());
@@ -381,14 +398,14 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == FILE_SELECT_CODE){
             if (data != null) {
-                String[] stringArray = data.getExtras().getStringArray("images");
-                if (stringArray.length > 0 && stringArray[0] != null){
+                String images = FileUtils.getPath(this, data.getData());
+                if (images != null && !images.equals("")){
                     System.currentTimeMillis();
                     if (fileindex == 1) {
-                        logoFile = new File(stringArray[0]);
+                        logoFile = new File(images);
                         uploadFile(logoFile);
                     } else {
-                        logoFile2 = new File(stringArray[0]);
+                        logoFile2 = new File(images);
                         uploadFile(logoFile2);
                     }
                 }

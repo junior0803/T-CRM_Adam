@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.util.FileUtils;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -98,15 +99,15 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == FILE_SELECT_CODE){
-            String [] images = data.getExtras().getStringArray("images");
-            if (images.length > 0 && images[0] != null) {
+        if (resultCode == RESULT_OK && requestCode == FILE_SELECT_CODE && data != null){
+            String images = FileUtils.getPath(this, data.getData());
+            if (images != null && !images.equals("")) {
                 if (logo_index == 1) {
-                    logo_address1 = images[0];
-                    btn_select_logo.setImageDrawable(Drawable.createFromPath(images[0]));
+                    logo_address1 = images;
+                    btn_select_logo.setImageDrawable(Drawable.createFromPath(images));
                 } else {
-                    logo_address2 = images[0];
-                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(images[0]));
+                    logo_address2 = images;
+                    btn_select_logo2.setImageDrawable(Drawable.createFromPath(images));
                 }
             }
         }
