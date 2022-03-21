@@ -3,6 +3,7 @@ package com.bts.adamcrm.util;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -14,6 +15,7 @@ import android.util.Log;
 
 import com.opensooq.supernova.gligar.utils.ConstsKt;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,6 +23,18 @@ import java.io.InputStream;
 
 public class FileUtils {
     private static Uri contentUri;
+
+    public static boolean decideToCompress(String fileName) {
+        File file = new File(fileName);
+
+        if (file.exists()){
+            long bytes = file.length();
+            long kilobytes = (bytes / 1024);
+            long megabytes = (kilobytes / 1024);
+            return megabytes > 1;
+        }
+        return false;
+    }
 
     public static String getPath(Context context, Uri uri){
 
@@ -195,6 +209,24 @@ public class FileUtils {
             e.printStackTrace();
         }
         return  file.getPath();
+    }
+
+
+    public static Uri getImageUri(Context context, Bitmap inImage){
+        inImage.compress(Bitmap.CompressFormat.PNG, 100, new ByteArrayOutputStream());
+        return Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), inImage,
+                "attach", null));
+    }
+
+    public static String getRealPathFromURI(Context context, Uri uri){
+        Cursor cursor;
+        if (context.getContentResolver() == null || (cursor = context.getContentResolver().query(uri, null, null, null, null)) == null){
+            return "";
+        }
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(ConstsKt.PATH_COLUMN));
+        cursor.close();
+        return path;
     }
 
     private static boolean isDownloadsDocument(Uri uri) {

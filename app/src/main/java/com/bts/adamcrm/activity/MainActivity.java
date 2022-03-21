@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -51,6 +52,8 @@ import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
 import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
+import com.bts.adamcrm.util.ImageFileFilter;
+import com.bts.adamcrm.util.ImageUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.bts.adamcrm.util.SharedPreferencesManager;
 import com.gun0912.tedpermission.PermissionListener;
@@ -424,8 +427,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     Log("customList : " + response.body() + " size : " + response.body().size());
                     for (Customer customer : response.body()){
                         customerList.add(customer);
-                        if (customer.getReminder_date() != null){
-                            if (!customer.getReminder_date().equals("")){
+                        if (customer.getReminder_date() != null) {
+                            if (!customer.getReminder_date().equals("")) {
                                 getDateAndSetupAlarm(customer.getReminder_date());
                             }
                             try {
@@ -946,9 +949,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK){
-            if (requestCode == FILE_SELECT_CODE){
-                uploadFile(new File(FileUtils.getPath(this, data.getData())));
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == FILE_SELECT_CODE) {
+                String FilePath = FileUtils.getPath(this, data.getData());
+                File file = new File(Objects.requireNonNull(FilePath));
+                if (new ImageFileFilter().accept(file) && FileUtils.decideToCompress(FilePath)) {
+                    Uri imageUri = ImageUtils.getInstant().getCompressedBitmap(this, FilePath);
+                    String tmpFilePath = FileUtils.getRealPathFromURI(this, imageUri);
+                    file = new File(tmpFilePath);
+                }
+                uploadFile(file);
             } else if (requestCode == PICKER_REQUEST_CODE){
                 String[] strArr = data.getExtras().getStringArray("images");
                 if (strArr.length > 0 && strArr[0] != null){

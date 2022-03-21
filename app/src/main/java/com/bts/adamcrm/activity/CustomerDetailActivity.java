@@ -44,6 +44,8 @@ import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
+import com.bts.adamcrm.util.ImageFileFilter;
+import com.bts.adamcrm.util.ImageUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
@@ -60,6 +62,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.MediaType;
@@ -1154,12 +1158,17 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK){
+        if (resultCode == RESULT_OK && data != null){
             if (requestCode == FILE_SELECT_CODE){
-                if (data != null) {
-                    Log("data : " + data.getData());
-                    uploadFile(new File(FileUtils.getPath(this, data.getData())));
+                Log("data : " + data.getData());
+                String FilePath = FileUtils.getPath(this, data.getData());
+                File file = new File(Objects.requireNonNull(FilePath));
+                if (new ImageFileFilter().accept(file) && FileUtils.decideToCompress(FilePath)){
+                    Uri imageUri = ImageUtils.getInstant().getCompressedBitmap(this, FilePath);
+                    String tmpFilePath = FileUtils.getRealPathFromURI(this, imageUri);
+                    file = new File(tmpFilePath);
                 }
+                uploadFile(file);
             } else if (requestCode == PICKER_REQUEST_CODE){
                 String strAttach = data.getExtras().getString("attachment");
                 boolean update = data.getExtras().getBoolean("update");
@@ -1194,48 +1203,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     recycler_invoices.setVisibility(View.VISIBLE);
                     txt_no_invoice.setVisibility(View.GONE);
                 }
-            } else if (requestCode == CAMERA_REQUEST){
-                Uri selectedImage = null;
-                if (data != null) {
-                     selectedImage = data.getData();
-                }
-                Log("Uri : " + selectedImage);
-                uploadFile(new File(getRealPathFromURI(selectedImage)));
             }
         }
-    }
-
-    public Uri getImageUri(Context context, Bitmap inImage){
-        inImage.compress(Bitmap.CompressFormat.PNG, 100, new ByteArrayOutputStream());
-        return Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), inImage,
-                "attach", null));
-    }
-
-    public String getRealPathFromURI(Uri uri){
-        Cursor cursor;
-        if (getContentResolver() == null || (cursor = getContentResolver().query(uri, null, null, null, null)) == null){
-            return "";
-        }
-        cursor.moveToFirst();
-        String path = cursor.getString(cursor.getColumnIndex(ConstsKt.PATH_COLUMN));
-        cursor.close();
-        return path;
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
     }
 
     private void uploadFile(File file) {
