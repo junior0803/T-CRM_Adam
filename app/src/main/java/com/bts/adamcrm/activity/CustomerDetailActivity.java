@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -306,12 +307,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
                 edt_reminder_date.setEnabled(false);
                 if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")){
+                    reminder = customer.getReminder_date() != null;
                     edt_reminder_date.setText(customer.getReminder_date());
                     edt_reminder_date.setEnabled(true);
                 }
                 spn_state.setSelection(customer.getState());
                 sms_sent = customer.isSms_sent();
-                reminder = customer.getReminder_date() != null;
                 chk_remind_me.setChecked(reminder);
                 if (sms_sent == 1){
                     txt_sms_staus.setText(R.string.sms_sent);
@@ -443,7 +444,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (invoiceList.size() > 0){
+                if (invoiceList.size() > 0) {
                     apiRepository.getApiService().deleteInvoice(invoiceList.get(position).getId()).enqueue(new Callback<String>() {
                         @Override
                         public void onResponse(Call<String> call, Response<String> response) {
@@ -1073,9 +1074,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void setupAlarm(long time) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, AlarmReceiver.class), 0);
-//        PendingIntent updateIntent = PendingIntent.getActivity(this, 1000, pendingIntent, PendingIntent.FLAG_IMMUTABLE);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, alarmIntent);
     }
 
     private void deleteItem(Activity activity, Customer customer) {

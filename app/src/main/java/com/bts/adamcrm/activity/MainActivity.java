@@ -477,10 +477,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
 
-    public void setupAlarm(long time) {
+    private void setupAlarm(long time) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent broadcast = PendingIntent.getBroadcast(this, 0, new Intent(this, AlarmReceiver.class), 0);
-        alarmManager.setExactAndAllowWhileIdle(RTC_WAKEUP, time, broadcast);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, alarmIntent);
     }
 
     private void updateActiveDevices(){

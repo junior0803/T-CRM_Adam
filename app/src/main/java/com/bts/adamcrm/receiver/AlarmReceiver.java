@@ -26,7 +26,7 @@ public class AlarmReceiver  extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock newWakeLock = powerManager.newWakeLock(PARTIAL_WAKE_LOCK, "");
-        newWakeLock.acquire();
+        newWakeLock.acquire(10*60*1000L /*10 minutes*/);
         newWakeLock.release();
         showNotificationMessage(context, "TCRM Reminder", "please check your application for reminders.");
     }
