@@ -1,58 +1,22 @@
 package com.bts.adamcrm.model;
 
-import com.google.android.gms.common.internal.ImagesContract;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Attachment {
-    @SerializedName("date_delete")
+    @SerializedName("file_path")
     @Expose
-    public String date_delete;
-    @SerializedName("key")
-    @Expose
-    public String key;
-    @SerializedName("name")
-    @Expose
-    public String name;
-    @SerializedName(ImagesContract.URL)
-    @Expose
-    public String url;
+    public String file_path;
 
-    public Attachment(String name, String url, String date){
-        this.name = name;
-        this.url = url;
-        this.date_delete = date;
+    public Attachment(String file_path){
+        this.file_path = file_path;
     }
 
-    public String getName(){
-        return this.name;
+    public String getFile_path() {
+        return file_path;
     }
 
-    public void setName(String name){
-        this.name = name;
-    }
-
-    public String getUrl(){
-        return this.url;
-    }
-
-    public void setUrl(String url){
-        this.url = url;
-    }
-
-    public String getDate_delete(){
-        return this.date_delete;
-    }
-
-    public void setDate_delete(String date){
-        this.date_delete = date;
-    }
-
-    public String getKey(){
-        return this.key;
-    }
-
-    public void setKey(String key){
-        this.key = key;
+    public void setFile_path(String file_path) {
+        this.file_path = file_path;
     }
 }

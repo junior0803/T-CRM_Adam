@@ -17,8 +17,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import butterknife.internal.Utils;
 
 public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.ViewHolder> implements Filterable {
     private List<StockItem> StockList;
@@ -31,9 +29,6 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.View
 
     public Filter getFilter() {
         return new Filter() {
-            /* class xyz.client.t_crm.adapter.StockItemAdapter.AnonymousClass1 */
-
-            /* access modifiers changed from: protected */
             public Filter.FilterResults performFiltering(CharSequence charSequence) {
                 Filter.FilterResults filterResults = new Filter.FilterResults();
                 ArrayList arrayList = new ArrayList();
@@ -42,7 +37,8 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.View
                     filterResults.values = StockItemAdapter.this.StockList;
                 } else {
                     for (StockItem stockItem : StockItemAdapter.this.StockList) {
-                        if (stockItem.getDescription().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        if (stockItem.getDescription().toLowerCase().contains(charSequence.toString().toLowerCase())
+                                || stockItem.getPno().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                             arrayList.add(stockItem);
                         }
                     }
@@ -52,7 +48,6 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.View
                 return filterResults;
             }
 
-            /* access modifiers changed from: protected */
             public void publishResults(CharSequence charSequence, Filter.FilterResults filterResults) {
                 StockItemAdapter.this.filteredData = (ArrayList) filterResults.values;
                 StockItemAdapter.this.notifyDataSetChanged();

@@ -20,6 +20,7 @@ import com.bts.adamcrm.adapter.StockItemAdapter;
 import com.bts.adamcrm.model.StockItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 
+import java.nio.channels.InterruptedByTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -168,6 +169,24 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
+                if (type == 0 && Integer.parseInt(edtQuantity.getText().toString()) < Integer.parseInt(edtMinQuantity.getText().toString())){
+                    apiRepository.getApiService().updatePart(stockItem.getId(), edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
+                            , edtDescription.getText().toString(), edtPno.getText().toString(), 1, is_shopping).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful() && response.body() != null){
+                                showToast("Saved!");
+                                loadAllData();
+                                dialog.dismiss();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            showToast("Please Activate internet connection!");
+                        }
+                    });
+                }
             }
         });
         dialog.show();
@@ -267,6 +286,25 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
+                if ( is_shopping == 0 &&Integer.parseInt(s.getQuantity()) < Integer.parseInt(s.getMinimum_quantity())){
+                    s.setIs_shopping(1);
+                    apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
+                            s.getPno(), s.getType(), s.getIs_shopping()).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful() && response.body() != null){
+                                showToast("Created!");
+                            }
+                            loadAllData();
+                            dialog.dismiss();
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            showToast("Please Activate internet connection!");
+                        }
+                    });
+                }
 
             }
         });

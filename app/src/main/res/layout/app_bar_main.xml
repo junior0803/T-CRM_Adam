@@ -125,23 +125,23 @@
                     android:id="@+id/btn_reset_sms"
                     android:layout_width="0.0dip"
                     android:layout_height="40.0dip"
-                    android:layout_marginStart="90.0dip"
+                    android:layout_marginStart="8.0dip"
                     android:layout_weight="1.0"
                     android:background="@drawable/btn_bg_2"
                     android:padding="8.0dip"
                     android:text="@string/reset_sms"
                     android:textColor="@color/md_white_1000" />
 
-<!--                <Button-->
-<!--                    android:id="@+id/btn_attach_main"-->
-<!--                    android:layout_width="0.0dip"-->
-<!--                    android:layout_height="40.0dip"-->
-<!--                    android:layout_marginStart="8.0dip"-->
-<!--                    android:layout_weight="1.0"-->
-<!--                    android:background="@drawable/btn_bg_3"-->
-<!--                    android:padding="8.0dip"-->
-<!--                    android:text="@string/attach"-->
-<!--                    android:textColor="@color/md_white_1000" />-->
+                <Button
+                    android:id="@+id/btn_attach_main"
+                    android:layout_width="0.0dip"
+                    android:layout_height="40.0dip"
+                    android:layout_marginStart="8.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/btn_bg_3"
+                    android:padding="8.0dip"
+                    android:text="@string/attach"
+                    android:textColor="@color/md_white_1000" />
 
                 <Button
                     android:id="@+id/btn_send_sms"
@@ -149,10 +149,10 @@
                     android:layout_height="40.0dip"
                     android:layout_marginStart="8.0dip"
                     android:layout_weight="1.0"
-                    android:background="@drawable/btn_bg_3"
+                    android:background="@drawable/btn_bg"
                     android:padding="8.0dip"
                     android:text="@string/send_sms"
-                    android:textColor="@color/md_white_1000"/>
+                    android:textColor="@color/md_black_1000"/>
 
             </LinearLayout>
 

@@ -7,12 +7,16 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 import androidx.exifinterface.media.ExifInterface;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ImageUtils {
 
@@ -24,6 +28,8 @@ public class ImageUtils {
         }
         return mInstant;
     }
+
+
 
     public  Uri getCompressedBitmap(Context context, String imagePath) {
         float maxHeight = 1920.0f;

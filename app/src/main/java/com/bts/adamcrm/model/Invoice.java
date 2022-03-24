@@ -72,7 +72,8 @@ public class Invoice {
 
     public Invoice(int id, String invoice_no, String email, String invoice_date, String mobile_num,
                    String to, String from_address, String items, String exclude_vat, String vat_amount,
-                   String invoice_total, String payed_amount, String due_total, String comment, String customer_id, String logo1, String logo2, String created_at, String updated_at) {
+                   String invoice_total, String payed_amount, String due_total, String comment, String customer_id,
+                   String logo1, String logo2, String created_at, String updated_at) {
         this.id = id;
         this.invoice_no = invoice_no;
         this.email = email;

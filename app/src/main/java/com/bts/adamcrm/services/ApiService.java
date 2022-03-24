@@ -1,5 +1,6 @@
 package com.bts.adamcrm.services;
 
+import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Invoice;
@@ -113,12 +114,19 @@ public interface ApiService {
     Call  <ResponseBody> insertInvoice(@Field("data[invoice_no]") String invoice_no, @Field("data[email]") String email, @Field("data[invoice_date]") String date,
                                        @Field("data[mobile_num]") String mobile, @Field("data[to]") String to, @Field("data[from_address]") String address,
                                        @Field("data[items]") String items, @Field("data[excluding_vat]") String exclude_vat, @Field("data[vat_amount]") String amount,
-                                       @Field("data[invoice_total]") String total, @Field("data[payed_amount]") String payed, @Field("data[due_total]") String due,
+                                       @Field("data[invoice_total]") String total, @Field("data[payed_amount]") String payed, @Field("data[due_total]") String due_total,
                                        @Field("data[comment]") String comment, @Field("data[customer_id]") String customer_id,
                                        @Field("data[preset1]") String preset1, @Field("data[preset2]") String preset2,
                                        @Field("id") int id, @Field("mode") String mode);
 
     @GET("deleteInvoice/{id}")
     Call <String> deleteInvoice(@Path("id") int id);
+
+    @Multipart
+    @POST("/attach_file")
+    Call <String> uploadAttach(@Part MultipartBody.Part file);
+
+    @GET("/get_attach_files")
+    Call <List<Attachment>> get_attach_files();
 
 }

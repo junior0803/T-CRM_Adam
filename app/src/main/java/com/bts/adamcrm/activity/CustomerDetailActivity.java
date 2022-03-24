@@ -10,10 +10,8 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -29,8 +27,11 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
@@ -50,8 +51,6 @@ import com.bts.adamcrm.util.RecyclerItemClickListener;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
-import com.opensooq.supernova.gligar.utils.ConstsKt;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -435,10 +434,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         startActivity(intent);
     }
 
-    private void clickAttachEdit(Activity activity, int position){
-        EditAttachmentActivity.launch(this, new Gson().toJson(attachmentList.get(position)));
-    }
-
     private void clickInvoiceDelete(Activity activity, int position){
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
@@ -491,45 +486,91 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     public void showSelectorDialog(Activity activity) {
-        TedPermission.create()
-                .setPermissionListener(permissionListener)
-                .setDeniedMessage(R.string.permission_check_message)
-                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
-//        Dialog dialog = new Dialog(activity);
-//        dialog.requestWindowFeature(1);
-//        dialog.setContentView(R.layout.dialog_selector);
-//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-//        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // more implement
-//                TedPermission.create()
-//                        .setPermissionListener(permissionListener)
-//                        .setDeniedMessage(R.string.permission_check_message)
-//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                        .check();
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-//                } else {
-//                    startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), CAMERA_REQUEST);
-//                }
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.show();
+//        TedPermission.create()
+//                .setPermissionListener(permissionListener)
+//                .setDeniedMessage(R.string.permission_check_message)
+//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                .check();
+        Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(1);
+        dialog.setContentView(R.layout.dialog_selector);
+        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
+        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // more implement
+                TedPermission.create()
+                        .setPermissionListener(permissionListener)
+                        .setDeniedMessage(R.string.permission_check_message)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .check();
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+                } else {
+                    dispatchTakePictureIntent();
+                }
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != 100) {
+            return;
+        }
+        if (grantResults[0] == 0) {
+            Toast.makeText(this, "camera permission granted", Toast.LENGTH_SHORT).show();
+            dispatchTakePictureIntent();
+            return;
+        }
+        Toast.makeText(this, "camera permission denied", Toast.LENGTH_SHORT).show();
+    }
+
+    public File createImageFile(){
+        String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String pictureFile =  timeStamp + "_attach";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = null;
+        try {
+            image = File.createTempFile(pictureFile,  ".jpg", storageDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            photoFile = createImageFile();
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.bts.adamcrm.provider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST);
+            }
+        }
     }
 
     @Override
@@ -1051,7 +1092,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful() && response.body() != null){
-                        showToast("Invoice Saved Successfully!");
+                        Log("Invoice Saved Successfully!");
                     } else {
                         showToast("Invoice Save Failed!");
                     }
@@ -1080,7 +1121,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, alarmIntent);
+        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - System.currentTimeMillis(), alarmIntent);
     }
 
     private void deleteItem(Activity activity, Customer customer) {
@@ -1203,12 +1244,19 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     recycler_invoices.setVisibility(View.VISIBLE);
                     txt_no_invoice.setVisibility(View.GONE);
                 }
+            } else if (requestCode == CAMERA_REQUEST){
+                File file = new File(currentPhotoPath);
+                if (new ImageFileFilter().accept(file) && FileUtils.decideToCompress(currentPhotoPath)){
+                    Uri imageUri = ImageUtils.getInstant().getCompressedBitmap(this, currentPhotoPath);
+                    String tmpFilePath = FileUtils.getRealPathFromURI(this, imageUri);
+                    file = new File(tmpFilePath);
+                }
+                uploadFile(file);
             }
         }
     }
 
     private void uploadFile(File file) {
-        showToast("upload File :" + file.getName());
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Uploading...");
         progressDialog.show();

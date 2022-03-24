@@ -1,7 +1,5 @@
 package com.bts.adamcrm.activity;
 
-import static android.app.AlarmManager.RTC_WAKEUP;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -11,11 +9,13 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,7 +47,7 @@ import com.bts.adamcrm.adapter.NavAdapter;
 import com.bts.adamcrm.adapter.StatusAdapter;
 import com.bts.adamcrm.helper.OnStartDragListener;
 import com.bts.adamcrm.helper.SimpleItemTouchHelperCallback;
-import com.bts.adamcrm.model.Attachment2;
+import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
@@ -60,6 +61,7 @@ import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,12 +87,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     ImageView action_add;
     @BindView(R.id.action_search)
     ImageView action_search;
-    List<Attachment2> attachment2List = new ArrayList<>();
+    List<Attachment> attachmentList = new ArrayList<>();
     TextView btn_end_date;
     @BindView(R.id.btn_reminder)
     TextView btn_reminder;
     @BindView(R.id.btn_reset_sms)
     Button btn_reset_sms;
+    @BindView(R.id.btn_attach_main)
+    Button btn_attach_main;
     @BindView(R.id.btn_select_period)
     TextView btn_select_period;
     @BindView(R.id.btn_select_state)
@@ -124,6 +128,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @BindView(R.id.spn_category)
     Spinner spn_category;
     List<String> statusList = new ArrayList<>();
+    String currentPhotoPath;
 
     PermissionListener permissionListener = new PermissionListener() {
         @Override
@@ -174,6 +179,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         if (sharedPreferencesManager.getBooleanValue("update")){
             loadCategories();
             loadAllData();
+            loadAllAttachments();
             sharedPreferencesManager.setBooleanValue("update", false);
         }
     }
@@ -217,15 +223,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         loadUi();
 
         //first boot
-
-
         updateActiveDevices();
         // Ui component init
         toggle_button.setOnClickListener(this);
         txt_online_count.setOnClickListener(this);
         action_add.setOnClickListener(this);
         action_search.setOnClickListener(this);
-//        btn_attach_main.setOnClickListener(this);
+        btn_attach_main.setOnClickListener(this);
         btn_send_sms.setOnClickListener(this);
         btn_reset_sms.setOnClickListener(this);
         btn_select_period.setOnClickListener(this);
@@ -345,7 +349,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void setupCurrentDate() {
-        txt_date.setText(new SimpleDateFormat("dd/MM/yyyy",
+        txt_date.setText(new SimpleDateFormat("MM/dd/yyyy",
                 Locale.getDefault()).format(Calendar.getInstance().getTime()));
     }
 
@@ -414,6 +418,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         spn_category.setAdapter(arrayAdapter);
     }
 
+    private void loadAllAttachments(){
+        apiRepository.getApiService().get_attach_files().enqueue(new Callback<List<Attachment>>(){
+            @Override
+            public void onResponse(Call<List<Attachment>> call, Response<List<Attachment>> response) {
+                if (response.isSuccessful() && response.body() != null){
+                    Log("response : " + response.body().size());
+                    attachmentList = new ArrayList<>(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Attachment>> call, Throwable t) {
+            }
+        });
+    }
+
     private void loadAllData(){
         progressDialog.show();
         // more implement
@@ -461,7 +481,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     public void getDateAndSetupAlarm(String str) {
-
         try {
             if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str)).getTime() >= new Date().getTime()) {
                 Date date = new Date();
@@ -482,9 +501,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void setupAlarm(long time) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
         Intent intent = new Intent(this, AlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, alarmIntent);
+        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - System.currentTimeMillis(), alarmIntent);
     }
 
     private void updateActiveDevices(){
@@ -564,9 +584,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     search_wrapper.setVisibility(View.VISIBLE);
                 }
                 break;
-//            case R.id.btn_attach_main:
-//                showSelectorDialog(this);
-//                break;
+            case R.id.btn_attach_main:
+                showSelectorDialog(this);
+                break;
             case R.id.btn_send_sms:
                 showSendSMSDialog(this);
                 break;
@@ -634,6 +654,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 customer.setSms_sent(1);
                 sendMsg.append(customer.getMobile_phone());
                 status ++;
+                // more implement
+                apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
+                        customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
+                        customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
+                        customer.getAttached_files()).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        showToast("Please Activate internet connection!");
+                    }
+                });
             }
         }
         if (sendMsg.equals("")){
@@ -649,6 +683,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             e.printStackTrace();
             showToast("No sms app found");
         }
+        showCustomerData();
         dialog.dismiss();
     }
 
@@ -657,7 +692,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_attachments);
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
-        Attachment2Adapter attachment2Adapter = new Attachment2Adapter(attachment2List);
+        Attachment2Adapter attachment2Adapter = new Attachment2Adapter(attachmentList);
         recyclerView.setAdapter(attachment2Adapter);;
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
@@ -673,7 +708,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent("android.intent.action.VIEW");
-                intent.setData(Uri.parse(attachment2List.get(position).getUrl()));
+                intent.setData(Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path()));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
@@ -681,7 +716,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                downloadUri = Uri.parse(attachment2List.get(position).getUrl());
+                downloadUri = Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path());
                 showToast("Attachment selected!");
                 dialog.dismiss();
             }
@@ -693,13 +728,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 dialog1.requestWindowFeature(1);
                 dialog1.setContentView(R.layout.dialog_delete_item);
                 ((TextView) dialog1.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-                ((TextView) dialog1.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + attachment2List.get(position).getName() + " ?");
+                ((TextView) dialog1.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + attachmentList.get(position).getFile_path() + " ?");
                 dialog1.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        attachment2List.remove(position);
-                        attachment2Adapter.updateAdapter(attachment2List);
-                        attachment2List.size();
+                        attachmentList.remove(position);
+                        attachment2Adapter.updateAdapter(attachmentList);
+                        attachmentList.size();
                         dialog.dismiss();
                     }
                 });
@@ -739,11 +774,61 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // more implement
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+                } else {
+                    dispatchTakePictureIntent();
+                }
                 dialog.dismiss();
             }
         });
         dialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != 100) {
+            return;
+        }
+        if (grantResults[0] == 0) {
+            Toast.makeText(this, "camera permission granted", Toast.LENGTH_SHORT).show();
+            dispatchTakePictureIntent();
+            return;
+        }
+        Toast.makeText(this, "camera permission denied", Toast.LENGTH_SHORT).show();
+    }
+
+    public File createImageFile(){
+        String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String pictureFile =  timeStamp + "_attach";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = null;
+        try {
+            image = File.createTempFile(pictureFile,  ".jpg", storageDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            photoFile = createImageFile();
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.bts.adamcrm.provider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST);
+            }
+        }
     }
 
     public void showStateDialog(Activity activity){
@@ -817,8 +902,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     showToast("Please Activate internet connection!");
                 }
             });
-            showCustomerData();
         }
+        showCustomerData();
     }
 
     public void showDateTimeDialog(Activity activity){
@@ -964,6 +1049,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 if (strArr.length > 0 && strArr[0] != null){
                     uploadFile(new File(strArr[0]));
                 }
+            } else if (requestCode == CAMERA_REQUEST){
+                File file = new File(currentPhotoPath);
+                if (new ImageFileFilter().accept(file) && FileUtils.decideToCompress(currentPhotoPath)){
+                    Uri imageUri = ImageUtils.getInstant().getCompressedBitmap(this, currentPhotoPath);
+                    String tmpFilePath = FileUtils.getRealPathFromURI(this, imageUri);
+                    file = new File(tmpFilePath);
+                }
+                uploadFile(file);
             }
         }
     }
@@ -980,22 +1073,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         );
         MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
 
-        apiRepository.getApiService().uploadCustomerAttach(body).enqueue(new Callback<String>() {
+        apiRepository.getApiService().uploadAttach(body).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()){
                     Log("response : " + response.body());
                     String uploadFile = response.body();
                     showToast("upload File :" + uploadFile);
-//                    attachmentList.add(uploadFile);
-//                    attachmentAdapter.updateAdapter(attachmentList);
-//                    if (attachmentList.size() > 0) {
-//                        recycler_attachments.setVisibility(View.VISIBLE);
-//                        txt_no_attachment.setVisibility(View.GONE);
-//                    } else {
-//                        recycler_attachments.setVisibility(View.GONE);
-//                        txt_no_attachment.setVisibility(View.VISIBLE);
-//                    }
+                    loadAllAttachments();
                 }
                 progressDialog.dismiss();
             }
