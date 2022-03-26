@@ -486,45 +486,47 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     public void showSelectorDialog(Activity activity) {
-//        TedPermission.create()
-//                .setPermissionListener(permissionListener)
-//                .setDeniedMessage(R.string.permission_check_message)
-//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                .check();
-        Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(1);
-        dialog.setContentView(R.layout.dialog_selector);
-        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // more implement
-                TedPermission.create()
-                        .setPermissionListener(permissionListener)
-                        .setDeniedMessage(R.string.permission_check_message)
-                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .check();
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-                } else {
-                    dispatchTakePictureIntent();
-                }
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        TedPermission.create()
+                .setPermissionListener(permissionListener)
+                .setDeniedMessage(R.string.permission_check_message)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+        // file attach implement begin
+//        Dialog dialog = new Dialog(activity);
+//        dialog.requestWindowFeature(1);
+//        dialog.setContentView(R.layout.dialog_selector);
+//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
+//        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                TedPermission.create()
+//                        .setPermissionListener(permissionListener)
+//                        .setDeniedMessage(R.string.permission_check_message)
+//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                        .check();
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+//                } else {
+//                    dispatchTakePictureIntent();
+//                }
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.show();
+        // file attach implement end
     }
 
     @Override
@@ -986,7 +988,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 //            if (invoiceList.size() > 0) {
 //                saveInvoice(invoiceList);
 //            }
-            // more implement...
+
             apiRepository.getApiService().insertCustomer(customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
                     customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
@@ -1039,11 +1041,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 //                customer.setDate_completed("");
 //            }
             customer.setAttached_files(new Gson().toJson(attachmentList));
-//            customer.setInvoices(invoiceList);
-            // more implement
-//            if (invoiceList.size() > 0) {
-//                saveInvoice(invoiceList);
-//            }
             customerID = customer.getId();
             apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
@@ -1185,7 +1182,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 dialog.dismiss();
             }
         }));
-        // more implement ...
 
         ((TextView) dialog.findViewById(R.id.btn_cancel)).setOnClickListener(new View.OnClickListener() {
             @Override

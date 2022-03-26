@@ -385,7 +385,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void loadCategories(){
-        // more implement
         apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
@@ -436,8 +435,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void loadAllData(){
         progressDialog.show();
-        // more implement
-
         apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
             @Override
             public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
@@ -508,7 +505,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void updateActiveDevices(){
-        // more implement
     }
 
     public void generateMenu() {
@@ -576,6 +572,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             case R.id.btn_sync:
                 loadCategories();
                 loadAllData();
+                loadAllAttachments();
                 break;
             case R.id.action_search:
                 if (search_wrapper.getVisibility() == View.VISIBLE){
@@ -654,7 +651,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 customer.setSms_sent(1);
                 sendMsg.append(customer.getMobile_phone());
                 status ++;
-                // more implement
                 apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                         customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
                         customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
@@ -688,19 +684,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void sendSMSattachfile(Activity activity) {
-        Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(1);
-        dialog.setContentView(R.layout.dialog_attachments);
-        RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
-        Attachment2Adapter attachment2Adapter = new Attachment2Adapter(attachmentList);
-        recyclerView.setAdapter(attachment2Adapter);;
-        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                listAttachFileSelect(dialog, attachment2Adapter,view, position);
-            }
-        }));
-        dialog.show();
+        if (attachmentList.size() > 0){
+            Dialog dialog = new Dialog(activity);
+            dialog.requestWindowFeature(1);
+            dialog.setContentView(R.layout.dialog_attachments);
+            RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
+            Attachment2Adapter attachment2Adapter = new Attachment2Adapter(attachmentList);
+            recyclerView.setAdapter(attachment2Adapter);;
+            recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    listAttachFileSelect(dialog, attachment2Adapter,view, position);
+                }
+            }));
+            dialog.show();
+        } else {
+            showToast("No Attachment Files!!");
+        }
     }
 
     private void listAttachFileSelect(Dialog dialog, Attachment2Adapter attachment2Adapter, View view, int position) {
@@ -735,7 +735,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         attachmentList.remove(position);
                         attachment2Adapter.updateAdapter(attachmentList);
                         attachmentList.size();
-                        dialog.dismiss();
+                        dialog1.dismiss();
+                        if (attachmentList.size() == 0){
+                            dialog.dismiss();
+                        }
+                        // more implement
                     }
                 });
                 dialog1.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -750,39 +754,46 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     public void showSelectorDialog(Activity activity) {
-        Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(1);
-        dialog.setContentView(R.layout.dialog_selector);
-        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TedPermission.create()
-                        .setPermissionListener(permissionListener)
-                        .setDeniedMessage(R.string.permission_check_message)
-                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .check();
-                dialog.dismiss();
-            }
-        });
-        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-                } else {
-                    dispatchTakePictureIntent();
-                }
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        TedPermission.create()
+                .setPermissionListener(permissionListener)
+                .setDeniedMessage(R.string.permission_check_message)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+        // file select dialog begin
+//        Dialog dialog = new Dialog(activity);
+//        dialog.requestWindowFeature(1);
+//        dialog.setContentView(R.layout.dialog_selector);
+//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
+//        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                TedPermission.create()
+//                        .setPermissionListener(permissionListener)
+//                        .setDeniedMessage(R.string.permission_check_message)
+//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                        .check();
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+//                } else {
+//                    dispatchTakePictureIntent();
+//                }
+//                dialog.dismiss();
+//            }
+//        });
+//        dialog.show();
+        // file select dialog end
     }
 
     @Override
@@ -888,7 +899,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         for (int i = 0; i < visibleList.size(); i ++){
             Customer customer = visibleList.get(i);
             customer.setSms_sent(0);
-            // more implement
             apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
                     customer.getState(), customer.getReminder_date(), customer.getCategory_id(), customer.getSms_sent(),
@@ -1020,7 +1030,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             public void onClick(View view) {
                 dialog.dismiss();
                 showedNotification = true;
-                // more implement
             }
         });
         dialog.show();

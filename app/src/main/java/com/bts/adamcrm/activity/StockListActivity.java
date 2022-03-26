@@ -169,15 +169,13 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
-                if (type == 0 && Integer.parseInt(edtQuantity.getText().toString()) < Integer.parseInt(edtMinQuantity.getText().toString())){
-                    apiRepository.getApiService().updatePart(stockItem.getId(), edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
-                            , edtDescription.getText().toString(), edtPno.getText().toString(), 1, is_shopping).enqueue(new Callback<ResponseBody>() {
+                if (is_shopping == 0 && Integer.parseInt(edtQuantity.getText().toString()) < Integer.parseInt(edtMinQuantity.getText().toString())){
+                    apiRepository.getApiService().createPart(edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
+                            , edtDescription.getText().toString(), edtPno.getText().toString(), type, 1).enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful() && response.body() != null){
-                                showToast("Saved!");
-                                loadAllData();
-                                dialog.dismiss();
+                                Log("Saved!");
                             }
                         }
 
@@ -201,7 +199,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         ((TextView) dialog.findViewById(R.id.btn_accept)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // more implement
+
                 apiRepository.getApiService().deletePart(stockItem.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -286,17 +284,15 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
-                if ( is_shopping == 0 &&Integer.parseInt(s.getQuantity()) < Integer.parseInt(s.getMinimum_quantity())){
+                if ( is_shopping == 0 && Integer.parseInt(s.getQuantity()) < Integer.parseInt(s.getMinimum_quantity())){
                     s.setIs_shopping(1);
                     apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
                             s.getPno(), s.getType(), s.getIs_shopping()).enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful() && response.body() != null){
-                                showToast("Created!");
+                                Log("Created!");
                             }
-                            loadAllData();
-                            dialog.dismiss();
                         }
 
                         @Override
