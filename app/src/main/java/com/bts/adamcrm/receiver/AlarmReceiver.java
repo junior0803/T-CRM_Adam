@@ -4,6 +4,7 @@ import static android.media.AudioAttributes.USAGE_NOTIFICATION;
 import static android.media.RingtoneManager.TYPE_NOTIFICATION;
 import static android.os.PowerManager.PARTIAL_WAKE_LOCK;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,6 +15,7 @@ import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,11 +25,13 @@ import androidx.core.app.TaskStackBuilder;
 
 import com.bts.adamcrm.R;
 import com.bts.adamcrm.activity.MainActivity;
+import com.bts.adamcrm.util.SharedPreferencesManager;
 
 public class AlarmReceiver  extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.e("junior", "intent : " + intent.getAction());
+        Bundle bundle = intent.getExtras();
+
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock newWakeLock = powerManager.newWakeLock(PARTIAL_WAKE_LOCK, "");
         newWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
@@ -39,7 +43,7 @@ public class AlarmReceiver  extends BroadcastReceiver {
         Log.e("junior", "showNotificationMessage");
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NotificationManager.class);
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
         String string = context.getResources().getString(R.string.default_notification_channel_id);
         Uri defaultUri = RingtoneManager.getDefaultUri(TYPE_NOTIFICATION);
 
@@ -57,8 +61,9 @@ public class AlarmReceiver  extends BroadcastReceiver {
                 .setContentTitle("T-CRM Reminder")
                 .setContentText("please check your application for reminders.")
                 .setDefaults(5)
-                .setContentIntent(PendingIntent.getActivity(context, 0, intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE ))
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setContentIntent(PendingIntent.getActivity(context, 1, intent,
+                        PendingIntent.FLAG_ONE_SHOT ))
                 .setVibrate(new long[]{800, 500, 600, 300});
         TaskStackBuilder create = TaskStackBuilder.create(context);
         create.addNextIntent(intent);
@@ -68,6 +73,9 @@ public class AlarmReceiver  extends BroadcastReceiver {
         bigTextStyle.setBigContentTitle("T-CRM Reminder");
         bigTextStyle.bigText("please check your application for reminders.");
         contentIntent.setStyle(bigTextStyle);
-        notificationManager.notify((int) System.currentTimeMillis(), contentIntent.build());
+        notificationManager.notify(1, contentIntent.build());
+
+        // new Value Reminder
+        SharedPreferencesManager.getInstance(context).setBooleanValue("update", true);
     }
 }

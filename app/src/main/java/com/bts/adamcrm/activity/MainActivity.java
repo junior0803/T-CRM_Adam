@@ -203,10 +203,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
         Intent intent = new Intent();
         String pkgName = getPackageName();
-        if (!((PowerManager)getSystemService(POWER_SERVICE)).isIgnoringBatteryOptimizations(pkgName)){
-            intent.setAction("android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS");
-            intent.setData(Uri.parse("package:" + pkgName));
-            startActivity(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!((PowerManager)getSystemService(POWER_SERVICE)).isIgnoringBatteryOptimizations(pkgName)){
+                intent.setAction("android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS");
+                intent.setData(Uri.parse("package:" + pkgName));
+                startActivity(intent);
+            }
         }
         statusList  = new ArrayList<>();
         statusList.add("Show All");
@@ -314,19 +316,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             }
                         }
                     }
-//                    else if (selected_category.getName().equals(R.string.all_categories)){
-//                        if (selectedState == 0){
-//                            visibleList.add(customerList.get(i));
-//                        } else if (customerList.get(i).getState() == selectedState){
-//                            visibleList.add(customerList.get(i));
-//                        }
-//                    } else if (selected_category.getName().equals(categoryList.get(customerList.get(i).getCategory_id()).getName())){
-//                        if (selectedState == 0){
-//                            visibleList.add(customerList.get(i));
-//                        } else if (customerList.get(i).getState() == selectedState){
-//                            visibleList.add(customerList.get(i));
-//                        }
-//                    }
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -445,9 +434,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     for (Customer customer : response.body()){
                         customerList.add(customer);
                         if (customer.getReminder_date() != null) {
-                            if (!customer.getReminder_date().equals("")) {
-                                getDateAndSetupAlarm(customer.getReminder_date());
-                            }
                             try {
                                 if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(customer.getReminder_date()).getTime() <= new Date().getTime()) {
                                     str_reminder = str_reminder + customer.getTitle() + " <br>";
@@ -477,32 +463,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         });
     }
 
-    public void getDateAndSetupAlarm(String str) {
-        try {
-            if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str)).getTime() >= new Date().getTime()) {
-                Date date = new Date();
-                try {
-                    date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                if (date != null) {
-                    setupAlarm(date.getTime());
-                }
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void setupAlarm(long time) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
-        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - System.currentTimeMillis(), alarmIntent);
-    }
 
     private void updateActiveDevices(){
     }
@@ -732,14 +692,28 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 dialog1.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        attachmentList.remove(position);
-                        attachment2Adapter.updateAdapter(attachmentList);
-                        attachmentList.size();
-                        dialog1.dismiss();
-                        if (attachmentList.size() == 0){
-                            dialog.dismiss();
-                        }
-                        // more implement
+                        apiRepository.getApiService().deleteAttachFile(attachmentList.get(position).getFile_path()).enqueue(new Callback<String>() {
+                            @Override
+                            public void onResponse(Call<String > call, Response<String> response) {
+                                if (response.isSuccessful()
+                                        && response.body() != null
+                                        && response.body().equals("success")){
+                                    attachmentList.remove(position);
+                                    attachment2Adapter.updateAdapter(attachmentList);
+                                    attachmentList.size();
+                                    dialog1.dismiss();
+                                    if (attachmentList.size() == 0){
+                                        dialog.dismiss();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                showToast("Please Activate internet connection!");
+                            }
+                        });
+
                     }
                 });
                 dialog1.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {

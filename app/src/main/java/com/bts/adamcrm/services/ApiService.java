@@ -122,6 +122,7 @@ public interface ApiService {
     @GET("deleteInvoice/{id}")
     Call <String> deleteInvoice(@Path("id") int id);
 
+    // file attach in home page
     @Multipart
     @POST("/attach_file")
     Call <String> uploadAttach(@Part MultipartBody.Part file);
@@ -129,4 +130,7 @@ public interface ApiService {
     @GET("/get_attach_files")
     Call <List<Attachment>> get_attach_files();
 
+    @FormUrlEncoded
+    @POST("/delete_attach_file")
+    Call <String> deleteAttachFile(@Field("name") String fileName);
 }

@@ -683,9 +683,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void showReminderDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
@@ -701,9 +701,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void showReminderTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mHour = calendar.get(Calendar.HOUR_OF_DAY);
+        mMinute = calendar.get(Calendar.MINUTE);
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
@@ -714,9 +713,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void showDateTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
@@ -1115,10 +1114,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void setupAlarm(long time) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
-        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - System.currentTimeMillis(), alarmIntent);
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        intent.putExtra("time", time);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        am.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
     }
 
     private void deleteItem(Activity activity, Customer customer) {
