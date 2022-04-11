@@ -2,14 +2,10 @@ package com.bts.adamcrm.activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,7 +21,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,6 +28,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -51,7 +47,6 @@ import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
-import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.ImageFileFilter;
 import com.bts.adamcrm.util.ImageUtils;
@@ -237,7 +232,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         btn_select_period.setOnClickListener(this);
         btn_reminder.setOnClickListener(this);
         btn_sync.setOnClickListener(this);
-        title_text.setText("Home");
+        title_text.setText(R.string.menu_home);
 
         generateMenu();
         menu_recycler.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(),
@@ -435,7 +430,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         customerList.add(customer);
                         if (customer.getReminder_date() != null) {
                             try {
-                                if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(customer.getReminder_date()).getTime() <= new Date().getTime()) {
+                                if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm")
+                                        .parse(customer.getReminder_date())).getTime() <= new Date().getTime()) {
                                     str_reminder = str_reminder + customer.getTitle() + " <br>";
                                 }
                             } catch (ParseException e) {
@@ -542,7 +538,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 }
                 break;
             case R.id.btn_attach_main:
-                showSelectorDialog(this);
+                showSelectorDialog();
                 break;
             case R.id.btn_send_sms:
                 showSendSMSDialog(this);
@@ -570,28 +566,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.setContentView(R.layout.dialog_send_sms);
         EditText editText = dialog.findViewById(R.id.edt_message);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.send_sms);
-        dialog.findViewById(R.id.btn_attach).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sendSMSattachfile(activity);
-            }
+        dialog.findViewById(R.id.btn_attach).setOnClickListener(view -> sendSMSattachfile(activity));
+        dialog.findViewById(R.id.btn_send).setOnClickListener(view -> {
+            editText.append("\n\n");
+            Uri uri = downloadUri;
+            if (uri != null)
+                editText.append(uri.toString());
+            sendSMS(editText.getText().toString(), dialog);
         });
-        dialog.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editText.append("\n\n");
-                Uri uri = downloadUri;
-                if (uri != null)
-                    editText.append(uri.toString());
-                sendSMS(editText.getText().toString(), dialog);
-            }
-        });
-        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        dialog.findViewById(R.id.btn_close).setOnClickListener(view -> dialog.dismiss());
         dialog.show();
     }
 
@@ -650,13 +633,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             dialog.setContentView(R.layout.dialog_attachments);
             RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
             Attachment2Adapter attachment2Adapter = new Attachment2Adapter(attachmentList);
-            recyclerView.setAdapter(attachment2Adapter);;
-            recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    listAttachFileSelect(dialog, attachment2Adapter,view, position);
-                }
-            }));
+            recyclerView.setAdapter(attachment2Adapter);
+            recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(),
+                    (view, position) -> listAttachFileSelect(dialog, attachment2Adapter,view, position)));
             dialog.show();
         } else {
             showToast("No Attachment Files!!");
@@ -664,70 +643,50 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void listAttachFileSelect(Dialog dialog, Attachment2Adapter attachment2Adapter, View view, int position) {
-        view.findViewById(R.id.btn_view).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent("android.intent.action.VIEW");
-                intent.setData(Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path()));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
+        view.findViewById(R.id.btn_view).setOnClickListener(view15 -> {
+            Intent intent = new Intent("android.intent.action.VIEW");
+            intent.setData(Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path()));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         });
-        view.findViewById(R.id.txt_name).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                downloadUri = Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path());
-                showToast("Attachment selected!");
-                dialog.dismiss();
-            }
+        view.findViewById(R.id.txt_name).setOnClickListener(view14 -> {
+            downloadUri = Uri.parse(HOME_ATTACH_FILE_URI + attachmentList.get(position).getFile_path());
+            showToast("Attachment selected!");
+            dialog.dismiss();
         });
-        view.findViewById(R.id.icon_delete).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Dialog dialog1 = new Dialog(view.getContext());
-                dialog1.requestWindowFeature(1);
-                dialog1.setContentView(R.layout.dialog_delete_item);
-                ((TextView) dialog1.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
-                ((TextView) dialog1.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + attachmentList.get(position).getFile_path() + " ?");
-                dialog1.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        apiRepository.getApiService().deleteAttachFile(attachmentList.get(position).getFile_path()).enqueue(new Callback<String>() {
-                            @Override
-                            public void onResponse(Call<String > call, Response<String> response) {
-                                if (response.isSuccessful()
-                                        && response.body() != null
-                                        && response.body().equals("success")){
-                                    attachmentList.remove(position);
-                                    attachment2Adapter.updateAdapter(attachmentList);
-                                    attachmentList.size();
-                                    dialog1.dismiss();
-                                    if (attachmentList.size() == 0){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<String> call, Throwable t) {
-                                showToast("Please Activate internet connection!");
-                            }
-                        });
-
-                    }
-                });
-                dialog1.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
+        view.findViewById(R.id.icon_delete).setOnClickListener(view13 -> {
+            Dialog dialog1 = new Dialog(view13.getContext());
+            dialog1.requestWindowFeature(1);
+            dialog1.setContentView(R.layout.dialog_delete_item);
+            ((TextView) dialog1.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
+            ((TextView) dialog1.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + attachmentList.get(position).getFile_path() + " ?");
+            dialog1.findViewById(R.id.btn_accept).setOnClickListener(view12 -> apiRepository.getApiService().deleteAttachFile(attachmentList.get(position).getFile_path()).enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String > call, Response<String> response) {
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().equals("success")){
+                        attachmentList.remove(position);
+                        attachment2Adapter.updateAdapter(attachmentList);
+                        attachmentList.size();
                         dialog1.dismiss();
+                        if (attachmentList.size() == 0){
+                            dialog.dismiss();
+                        }
                     }
-                });
-                dialog1.show();
-            }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    showToast("Please Activate internet connection!");
+                }
+            }));
+            dialog1.findViewById(R.id.btn_cancel).setOnClickListener(view1 -> dialog1.dismiss());
+            dialog1.show();
         });
     }
 
-    public void showSelectorDialog(Activity activity) {
+    public void showSelectorDialog() {
         TedPermission.create()
                 .setPermissionListener(permissionListener)
                 .setDeniedMessage(R.string.permission_check_message)
@@ -771,7 +730,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != 100) {
             return;
@@ -803,7 +762,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = null;
+            File photoFile;
             photoFile = createImageFile();
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -829,12 +788,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 setStateItem(dialog, position);
             }
         }));
-        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(view -> dialog.dismiss());
         dialog.show();
     }
 
@@ -852,20 +806,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.setContentView(R.layout.dialog_delete_item);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.reset_sms);
         ((TextView) dialog.findViewById(R.id.txt)).setText(R.string.reset_sms_request);
-        dialog.findViewById(R.id.btn_accept).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetList();
-                showToast("Sms Status Reset!");
-                dialog.dismiss();
-            }
+        dialog.findViewById(R.id.btn_accept).setOnClickListener(view -> {
+            resetList();
+            showToast("Sms Status Reset!");
+            dialog.dismiss();
         });
-        dialog.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(view -> dialog.dismiss());
         dialog.show();
     }
 
@@ -906,47 +852,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             btn_start_date.setText(picked_date);
 
         txt_title.setText(R.string.select_date);
-        btn_reset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btn_reset.setOnClickListener(view -> {
+            end_picked_date = "";
+            picked_date = "";
+            btn_end_date.setText("");
+            btn_start_date.setText("");
+            showCustomerData();
+            btn_select_period.setText(R.string.select_period);
+            dialog.dismiss();
+        });
+
+        btn_show.setOnClickListener(view -> {
+            if (end_picked_date.equals("") || picked_date.equals("")){
                 end_picked_date = "";
                 picked_date = "";
                 btn_end_date.setText("");
                 btn_start_date.setText("");
+            } else {
+                btn_select_period.setText(R.string.reset_period);
                 showCustomerData();
-                btn_select_period.setText(R.string.select_period);
-                dialog.dismiss();
             }
+            dialog.dismiss();
         });
 
-        btn_show.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (end_picked_date.equals("") || picked_date.equals("")){
-                    end_picked_date = "";
-                    picked_date = "";
-                    btn_end_date.setText("");
-                    btn_start_date.setText("");
-                } else {
-                    btn_select_period.setText(R.string.reset_period);
-                    showCustomerData();
-                }
-                dialog.dismiss();
-            }
-        });
-
-        btn_start_date.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showStartDateTimeDialog();
-            }
-        });
-        btn_end_date.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showEndDateTimeDialog();
-            }
-        });
+        btn_start_date.setOnClickListener(view -> showStartDateTimeDialog());
+        btn_end_date.setOnClickListener(view -> showEndDateTimeDialog());
         dialog.show();
     }
 
@@ -957,15 +887,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         mYear = calendar.get(Calendar.YEAR);
         mMonth = calendar.get(Calendar.MONTH);
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                mMonth = i1 + 1;
-                mYear = i;
-                mDay = i2;
-                picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
-                btn_start_date.setText(picked_date);
-            }
+        new DatePickerDialog(this, (datePicker, i, i1, i2) -> {
+            mMonth = i1 + 1;
+            mYear = i;
+            mDay = i2;
+            picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
+            btn_start_date.setText(picked_date);
         }, mYear, mMonth, mDay).show();
     }
 
@@ -974,15 +901,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         mYear = calendar.get(Calendar.YEAR);
         mMonth = calendar.get(Calendar.MONTH);
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                mYear = i;
-                mMonth = i1 + 1;
-                mDay = i2;
-                end_picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
-                btn_end_date.setText(end_picked_date);
-            }
+        new DatePickerDialog(this, (datePicker, i, i1, i2) -> {
+            mYear = i;
+            mMonth = i1 + 1;
+            mDay = i2;
+            end_picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
+            btn_end_date.setText(end_picked_date);
         }, mYear, mMonth, mDay).show();
     }
 
@@ -992,19 +916,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         dialog.setContentView(R.layout.dialog_reminder);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.reminder);
         ((TextView) dialog.findViewById(R.id.txt_msg)).setText(reminder);
-        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-                showedNotification = true;
-            }
+        dialog.findViewById(R.id.btn_close).setOnClickListener(view -> {
+            dialog.dismiss();
+            showedNotification = true;
         });
-        dialog.findViewById(R.id.btn_exit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-                showedNotification = true;
-            }
+        dialog.findViewById(R.id.btn_exit).setOnClickListener(view -> {
+            dialog.dismiss();
+            showedNotification = true;
         });
         dialog.show();
     }
@@ -1058,7 +976,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
         apiRepository.getApiService().uploadAttach(body).enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()){
                     Log("response : " + response.body());
                     String uploadFile = response.body();
@@ -1069,7 +987,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(@NonNull Call<String> call, Throwable t) {
                 showToast("Please Activate internet connection!");
                 progressDialog.show();
             }
