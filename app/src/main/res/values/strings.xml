@@ -50,8 +50,8 @@
     <string name="address">Address</string>
     <string name="town">Town</string>
     <string name="postal_code">Postal code</string>
-    <string name="date_form_created">Date form created</string>
-    <string name="date_form_updated">Date form Updated</string>
+    <string name="date_form_created">Date from created</string>
+    <string name="date_form_updated">Date from Updated</string>
     <string name="date_and_time">Date and Time</string>
     <string name="further_note">Further note</string>
     <string name="remind_me">Remind me</string>

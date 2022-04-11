@@ -291,7 +291,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         String endTime = " 23:59:59";
         for (int i = 0; i < customerList.size(); i ++){
             if (!picked_date.equals("") || !end_picked_date.equals("")){
-                SimpleDateFormat datePickerFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                SimpleDateFormat datePickerFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     Date date = new Date();
@@ -338,7 +338,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void setupCurrentDate() {
-        txt_date.setText(new SimpleDateFormat("MM/dd/yyyy",
+        txt_date.setText(new SimpleDateFormat("dd/MM/yyyy",
                 Locale.getDefault()).format(Calendar.getInstance().getTime()));
     }
 
@@ -954,16 +954,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void showStartDateTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
                 mMonth = i1 + 1;
                 mYear = i;
                 mDay = i2;
-                picked_date = mMonth + "/" + mDay + "/" + mYear;
+                picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
                 btn_start_date.setText(picked_date);
             }
         }, mYear, mMonth, mDay).show();
@@ -971,16 +971,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void showEndDateTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                end_picked_date = mMonth + "/" + mDay + "/" + mYear;
+                end_picked_date = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear;
                 btn_end_date.setText(end_picked_date);
             }
         }, mYear, mMonth, mDay).show();

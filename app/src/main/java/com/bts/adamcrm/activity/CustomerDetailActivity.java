@@ -48,6 +48,7 @@ import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.ImageFileFilter;
 import com.bts.adamcrm.util.ImageUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
+import com.bts.adamcrm.util.TimeUtils;
 import com.google.gson.Gson;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
@@ -134,6 +135,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     private int mDay;
     private int mHour;
     private int mMinute;
+    private int mSecond;
     private int mMonth;
     private int mYear;
 
@@ -194,9 +196,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     public void getCurrentDate(){
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
     }
 
     private void setupStateSpinner() {
@@ -304,14 +306,20 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_town.setText(customer.getTown());
                 edt_address.setText(customer.getAddress());
                 edt_post_code.setText(customer.getPostal_code());
-                edt_date_created.setText(customer.getDate_created());
-                edt_date_updated.setText(customer.getDate_updated());
+                edt_date_created.setText(
+                        TimeUtils.formatDate(customer.getDate_created(),
+                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_TIME_FORMAT));
+                edt_date_updated.setText(
+                        TimeUtils.formatDate(customer.getDate_updated(),
+                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_TIME_FORMAT));
                 edt_further_none.setText(customer.getFurther_note());
 
                 edt_reminder_date.setEnabled(false);
                 if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")){
                     reminder = customer.getReminder_date() != null;
-                    edt_reminder_date.setText(customer.getReminder_date());
+                    edt_reminder_date.setText(
+                            TimeUtils.formatDate(customer.getReminder_date(),
+                                    TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_TIME_FORMAT));
                     edt_reminder_date.setEnabled(true);
                 }
                 spn_state.setSelection(customer.getState());
@@ -692,8 +700,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                edt_reminder_date.setText(mYear + "-"
-                        + String.format("%02d-%02d", Integer.valueOf(mMonth), Integer.valueOf(mDay)));
+                edt_reminder_date.setText(String.format("%02d/%02d", mDay, mMonth) + "/" + mYear);
                 showReminderTimeDialog();
             }
         }, mYear, mMonth, mDay).show();
@@ -706,7 +713,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                edt_reminder_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
+                edt_reminder_date.append(String.format(" %02d:%02d", i, i1) + ":00");
             }
         }, mHour, mMinute, true).show();
     }
@@ -729,9 +736,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
     private void showAttachmentDateTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
@@ -963,23 +970,21 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             customer.setState(spn_state.getSelectedItemPosition());
             if (reminder) {
                 customer.setReminder_date(edt_reminder_date.getText().toString());
-                getDateAndSetupAlarm(edt_reminder_date.getText().toString());
+                getDateAndSetupAlarm(customer.getReminder_date());
             } else {
                 customer.setReminder_date("");
             }
             calendar = Calendar.getInstance();
-            mYear = calendar.get(1);
-            mMonth = calendar.get(2) + 1;
-            mDay = calendar.get(5);
-            Timestamp time = new Timestamp(calendar.getTime().getTime());
-//            if (spn_state.getSelectedItemPosition() == 2){
-//                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
-//            } else {
-//                customer.setDate_completed("");
-//            }
-            //customer.setDate_updated(mDay + "/" + mMonth + "/" + mYear);
+            mYear = calendar.get(Calendar.YEAR);
+            mMonth = calendar.get(Calendar.MONTH) + 1;
+            mDay = calendar.get(Calendar.DAY_OF_MONTH);
+            mHour = calendar.get(Calendar.HOUR);
+            mMinute = calendar.get(Calendar.MINUTE);
+            mSecond = calendar.get(Calendar.SECOND);
+            String CurrentTime = String.format("%02d/%02d", mDay, mMonth) + "/" + mYear +
+                    " " + String.format("%02d:%02d:%02d", mHour, mMinute, mSecond);
             if (edt_date_created.getText().toString().equals("")){
-                customer.setDate_created(time.toString());
+                customer.setDate_created(CurrentTime);
             }
 
             customer.setAttached_files(new Gson().toJson(attachmentList));
@@ -1026,19 +1031,10 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
             if (reminder) {
                 customer.setReminder_date(edt_reminder_date.getText().toString());
-                getDateAndSetupAlarm(edt_reminder_date.getText().toString());
+                getDateAndSetupAlarm(customer.getReminder_date());
             } else {
                 customer.setReminder_date("");
             }
-            calendar = Calendar.getInstance();
-            mYear = calendar.get(1);
-            mMonth = calendar.get(2) + 1;
-            mDay = calendar.get(5);
-//            if (spn_state.getSelectedItemPosition() == 2){
-//                customer.setDate_completed(mDay + "/" + mMonth + "/" + mYear);
-//            } else {
-//                customer.setDate_completed("");
-//            }
             customer.setAttached_files(new Gson().toJson(attachmentList));
             customerID = customer.getId();
             apiRepository.getApiService().updateCustomer(customer.getId(), customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),

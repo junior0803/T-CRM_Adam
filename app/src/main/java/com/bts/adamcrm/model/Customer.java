@@ -1,5 +1,6 @@
 package com.bts.adamcrm.model;
 
+import com.bts.adamcrm.util.TimeUtils;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -186,7 +187,7 @@ public class Customer {
     }
 
     public void setReminder_date(String reminder_date) {
-        this.reminder_date = reminder_date;
+        this.reminder_date = TimeUtils.formatDate(reminder_date, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
     }
 
     public int getCategory_id() {
@@ -222,7 +223,8 @@ public class Customer {
     }
 
     public void setDate_created(String date_created) {
-        Date_created = date_created;
+        Date_created =
+                TimeUtils.formatDate(date_created, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
     }
 
     public String getDate_updated() {
@@ -230,6 +232,7 @@ public class Customer {
     }
 
     public void setDate_updated(String date_updated) {
-        Date_updated = date_updated;
+        Date_updated =
+                TimeUtils.formatDate(date_updated, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);;
     }
 }

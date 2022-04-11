@@ -1,5 +1,6 @@
 package com.bts.adamcrm.model;
 
+import com.bts.adamcrm.util.TimeUtils;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -124,7 +125,8 @@ public class Invoice {
     }
 
     public void setInvoice_date(String invoice_date) {
-        this.invoice_date = invoice_date;
+        this.invoice_date =
+                TimeUtils.formatDate(invoice_date, TimeUtils.UI_DATE_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
     }
 
     public String getMobile_num() {

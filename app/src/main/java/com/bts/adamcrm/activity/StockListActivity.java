@@ -20,7 +20,6 @@ import com.bts.adamcrm.adapter.StockItemAdapter;
 import com.bts.adamcrm.model.StockItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 
-import java.nio.channels.InterruptedByTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,22 +168,6 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
-                if (is_shopping == 0 && Integer.parseInt(edtQuantity.getText().toString()) < Integer.parseInt(edtMinQuantity.getText().toString())){
-                    apiRepository.getApiService().createPart(edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
-                            , edtDescription.getText().toString(), edtPno.getText().toString(), type, 1).enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if (response.isSuccessful() && response.body() != null){
-                                Log("Saved!");
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            showToast("Please Activate internet connection!");
-                        }
-                    });
-                }
             }
         });
         dialog.show();
@@ -257,11 +240,6 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
             public void onClick(View view) {
                 //String strId;
                 StockItem s = new StockItem();
-//                if (stockItemList.size() > 0){
-//                    strId = ((stockItemList.get(stockItemList.size() - 1).getId()) + 1) + "";
-//                } else {
-//                    strId = BuildConfig.VERSION_NAME;
-//                }
                 s.setDescription(editDescription.getText().toString());
                 s.setPno(editPno.getText().toString());
                 s.setQuantity(editQuantity.getText().toString());
@@ -284,24 +262,6 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         showToast("Please Activate internet connection!");
                     }
                 });
-                if ( is_shopping == 0 && Integer.parseInt(s.getQuantity()) < Integer.parseInt(s.getMinimum_quantity())){
-                    s.setIs_shopping(1);
-                    apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
-                            s.getPno(), s.getType(), s.getIs_shopping()).enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if (response.isSuccessful() && response.body() != null){
-                                Log("Created!");
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            showToast("Please Activate internet connection!");
-                        }
-                    });
-                }
-
             }
         });
         dialog.show();

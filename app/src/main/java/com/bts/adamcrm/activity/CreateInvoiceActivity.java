@@ -29,6 +29,7 @@ import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.InvoiceItem;
 import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
+import com.bts.adamcrm.util.TimeUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.gun0912.tedpermission.PermissionListener;
@@ -70,12 +71,8 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     EditText edt_address;
     @BindView(R.id.edt_comment)
     EditText edt_comment;
-    @BindView(R.id.edt_company)
-    EditText edt_company;
     @BindView(R.id.edt_due_total)
     EditText edt_due_total;
-    @BindView(R.id.edt_email)
-    EditText edt_email;
     @BindView(R.id.edt_exclude_vat)
     EditText edt_exclude_vat;
     @BindView(R.id.edt_invoice_date)
@@ -84,8 +81,6 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     EditText edt_invoice_no;
     @BindView(R.id.edt_invoice_total)
     EditText edt_invoice_total;
-    @BindView(R.id.edt_mobile)
-    EditText edt_mobile;
     @BindView(R.id.edt_payed_amount)
     EditText edt_payed_amount;
     @BindView(R.id.edt_vat_amount)
@@ -146,9 +141,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         str_invoice = getIntent().getStringExtra("str_invoice");
         if (str_invoice.equals("")){
             invoice = new Invoice();
-            edt_company.setText(sharedPreferencesManager.getStringValue("address"));
-            edt_mobile.setText(sharedPreferencesManager.getStringValue("mobile"));
-            edt_email.setText(sharedPreferencesManager.getStringValue("email"));
+
             if (!sharedPreferencesManager.getStringValue("logo").equals("")){
                 logoFile = new File(sharedPreferencesManager.getStringValue("logo"));
                 if (logoFile.exists()){
@@ -201,11 +194,9 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
             }
 
             edt_invoice_no.setText(invoice.getInvoice_no());
-            edt_email.setText(invoice.getEmail());
-            edt_invoice_date.setText(invoice.getInvoice_date());
-            edt_mobile.setText(invoice.getMobile_num());
+            edt_invoice_date.setText(
+                    TimeUtils.formatDate(invoice.getInvoice_date(), TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_FORMAT));
             edt_address.setText(invoice.getTo());
-            edt_company.setText(invoice.getFrom_address());
             Log("invoiceitem : " + invoice.getItems());
             //invoiceItemList = new Gson().fromJson(invoice.getItems(), InvoiceItem.class);
             Type type  = new TypeToken<ArrayList<InvoiceItem>>(){}.getType();
@@ -309,31 +300,30 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
 
     private void showInvoice_date() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
                 mYear = i;
                 mMonth = i1 + 1;
                 mDay = i2;
-                edt_invoice_date.setText(mYear + "-"
-                        + String.format("%02d-%02d", Integer.valueOf(mMonth), Integer.valueOf(mDay)));
-                showInvoiceTimeDialog();
+                edt_invoice_date.setText(String.format("%02d/%02d", mDay, mMonth) + "/" + mYear);
+//                showInvoiceTimeDialog();
             }
         }, mYear, mMonth, mDay).show();
     }
 
     private void showInvoiceTimeDialog() {
         calendar = Calendar.getInstance();
-        mYear = calendar.get(1);
-        mMonth = calendar.get(2);
-        mDay = calendar.get(5);
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
         new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                edt_invoice_date.append(String.format(" %02d:%02d", Integer.valueOf(i), Integer.valueOf(i1)));
+                edt_invoice_date.append(String.format(" %02d:%02d", i, i1));
             }
         }, mHour, mMinute, true).show();
     }
@@ -366,14 +356,23 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void save() {
+        if (sharedPreferencesManager.getStringValue("address").equals("")
+                || sharedPreferencesManager.getStringValue("mobile").equals("")
+                || sharedPreferencesManager.getStringValue("email").equals("")) {
+            showToast("Please input Business Info in Settings");
+            return;
+        } else {
+            invoice.setFrom_address(sharedPreferencesManager.getStringValue("address"));
+            invoice.setMobile_num(sharedPreferencesManager.getStringValue("mobile"));
+            invoice.setEmail(sharedPreferencesManager.getStringValue("email"));
+        }
         invoice.setInvoice_no(edt_invoice_no.getText().toString());
         invoice.setInvoice_date(edt_invoice_date.getText().toString());
         invoice.setInvoice_total(edt_invoice_total.getText().toString());
         invoice.setItems(new Gson().toJson(invoiceItemList));
-        invoice.setMobile_num(edt_mobile.getText().toString());
-        invoice.setEmail(edt_email.getText().toString());
+
         invoice.setTo(edt_address.getText().toString());
-        invoice.setFrom_address(edt_company.getText().toString());
+
         if (logoFile == null){
             invoice.setLogo1("");
         }

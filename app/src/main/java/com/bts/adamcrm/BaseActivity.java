@@ -1,15 +1,14 @@
 package com.bts.adamcrm;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bts.adamcrm.services.ApiRepository;
 import com.bts.adamcrm.util.SharedPreferencesManager;
+
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -45,4 +44,6 @@ public class BaseActivity extends AppCompatActivity {
     public void Log(String string){
         Log.e("junior", string);
     }
+
+
 }
