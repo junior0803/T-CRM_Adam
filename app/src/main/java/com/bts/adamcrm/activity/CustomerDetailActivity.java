@@ -308,10 +308,10 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 edt_post_code.setText(customer.getPostal_code());
                 edt_date_created.setText(
                         TimeUtils.formatDate(customer.getDate_created(),
-                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_TIME_FORMAT));
+                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_FORMAT));
                 edt_date_updated.setText(
                         TimeUtils.formatDate(customer.getDate_updated(),
-                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_TIME_FORMAT));
+                                TimeUtils.DB_DATE_TIME_FORMAT, TimeUtils.UI_DATE_FORMAT));
                 edt_further_none.setText(customer.getFurther_note());
 
                 edt_reminder_date.setEnabled(false);
@@ -694,15 +694,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         mYear = calendar.get(Calendar.YEAR);
         mMonth = calendar.get(Calendar.MONTH);
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                mYear = i;
-                mMonth = i1 + 1;
-                mDay = i2;
-                edt_reminder_date.setText(String.format("%02d/%02d", mDay, mMonth) + "/" + mYear);
-                showReminderTimeDialog();
-            }
+        new DatePickerDialog(this, (datePicker, i, i1, i2) -> {
+            mYear = i;
+            mMonth = i1 + 1;
+            mDay = i2;
+            edt_reminder_date.setText(String.format("%02d/%02d", mDay, mMonth) + "/" + mYear);
+            showReminderTimeDialog();
         }, mYear, mMonth, mDay).show();
     }
 
@@ -1010,7 +1007,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 }
 
                 @Override
-                public void onFailure(Call<String> call, Throwable t) {
+                public void onFailure(@NonNull Call<String> call, Throwable t) {
                     showToast("Please Activate internet connection!");
                 }
             });

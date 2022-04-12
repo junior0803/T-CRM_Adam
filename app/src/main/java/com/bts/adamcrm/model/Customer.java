@@ -187,7 +187,8 @@ public class Customer {
     }
 
     public void setReminder_date(String reminder_date) {
-        this.reminder_date = TimeUtils.formatDate(reminder_date, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
+        this.reminder_date =
+                TimeUtils.formatDate(reminder_date, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
     }
 
     public int getCategory_id() {
