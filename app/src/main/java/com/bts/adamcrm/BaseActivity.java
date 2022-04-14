@@ -17,7 +17,7 @@ public class BaseActivity extends AppCompatActivity {
     public static final int FILE_SELECT_CODE = 1111;
     public static final int CAMERA_REQUEST = 1888;
     public static final int INVOICE_REQUEST_CODE = 9000;
-    public static final boolean online = false;
+    public static final boolean online = true;
     public static final String BASIC_URL = online ? "http://178.255.225.133/" : "http://10.10.11.153/";
     public static final String ATTACH_FILE_URI = BASIC_URL + "uploads/";
     public static final String LOGO_FILE_URI = ATTACH_FILE_URI + "invoice/";
