@@ -573,6 +573,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             if (uri != null)
                 editText.append(uri.toString());
             sendSMS(editText.getText().toString(), dialog);
+            downloadUri = null;
         });
         dialog.findViewById(R.id.btn_close).setOnClickListener(view -> dialog.dismiss());
         dialog.show();

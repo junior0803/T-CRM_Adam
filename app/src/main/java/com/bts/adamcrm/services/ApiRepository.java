@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class ApiRepository {
     private static ApiRepository instance;
 
-    private ApiService apiService;
+    private final ApiService apiService;
 
     public  static ApiRepository getInstance(){
         if (instance == null)

@@ -30,7 +30,7 @@ public class BaseActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.sharedPreferencesManager = SharedPreferencesManager.getInstance(this);
-        apiRepository = apiRepository.getInstance();
+        apiRepository = ApiRepository.getInstance();
     }
 
     public void exit(){

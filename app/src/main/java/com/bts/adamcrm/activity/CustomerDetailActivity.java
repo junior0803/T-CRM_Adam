@@ -794,10 +794,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         txt_sms_staus.setTextColor(getResources().getColor(R.color.md_green_900));
         try {
             Log.i("junior", strNumber);
-            Intent intent = new Intent("android.intent.action.VIEW");
-            intent.putExtra("address", strNumber);
+            Intent intent = new Intent("android.intent.action.SENDTO", Uri.parse("smsto:" + strNumber));
+//            intent.putExtra("address", strNumber);
             intent.putExtra("sms_body", string);
-            intent.setType("vnd.android-dir/mms-sms");
             startActivity(intent);
         } catch (Exception e){
             e.printStackTrace();
