@@ -320,8 +320,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         || selected_category.getName().equals("All Categories")
                         || selected_category.getId() == customerList.get(i).getCategory_id()){
                     Log("All Category");
-                    if (selectedState == 4 && customerList.get(i).getReminder_date() != null){
-                        visibleList.add(customerList.get(i));
+                    if (selectedState == 4 && customerList.get(i).getReminder_date() != null ){
+                        String ss = customerList.get(i).getReminder_date();
+                        boolean bbb = ss.equals("");
+                        if( bbb == false )
+                            visibleList.add(customerList.get(i));
                     } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
                         visibleList.add(customerList.get(i));
                     }
@@ -345,7 +348,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         tasks_recycler.addOnItemTouchListener(new RecyclerItemClickListener(MainActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                CustomerDetailActivity.launch(MainActivity.this, visibleList.get(position));
+                CustomerDetailActivity.launch(MainActivity.this, customerAdapter.getCustomerList().get(position));
+//                CustomerDetailActivity.launch(MainActivity.this, visibleList.get(position));
             }
         }));
         btn_select_state.setOnClickListener(this);
@@ -432,7 +436,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             try {
                                 if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm")
                                         .parse(customer.getReminder_date())).getTime() <= new Date().getTime()) {
-                                    str_reminder = str_reminder + customer.getTitle() + " <br>";
+
+                                    String remind_str = customer.getTitle();
+
+                                    int mmm = remind_str.length();
+                                    if ( remind_str.length() > 36 ) {
+                                        String str = remind_str.substring(0, 36);
+                                        remind_str = str + "...";
+                                    }
+
+                                    str_reminder = str_reminder + remind_str + " <br>";
                                 }
                             } catch (ParseException e) {
                                 e.printStackTrace();

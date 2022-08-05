@@ -947,10 +947,10 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void saveOrUpdate(boolean b, Dialog dialog) {
-        if (selected_category == null){
-            showToast("Please select a category first");
-            return;
-        }
+//        if (selected_category == null){
+//            showToast("Please select a category first");
+//            return;
+//        }
         if (customer == null || customer.getTitle().equals("")){
             customer = new Customer();
             customer.setTitle(edt_title.getText().toString());
@@ -1022,7 +1022,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             customer.setFurther_note(edt_further_none.getText().toString());
             customer.setDate_created(edt_date_created.getText().toString());
             customer.setDate_updated(edt_date_updated.getText().toString());
-            customer.setCategory_id(selected_category.getId());
+           // customer.setCategory_id(selected_category.getId());
             customer.setSms_sent(sms_sent);
 
             if (reminder) {

@@ -107,7 +107,14 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.ViewHo
 
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         Customer customer = (Customer) filteredData.get(i);
-        viewHolder.title.setText(customer.getTitle().split("\n")[0]);
+       // viewHolder.title.setText(customer.getTitle().split("\n")[0]);
+        String title_str = customer.getTitle().split("\n")[0];
+        int mmm = title_str.length();
+        if ( title_str.length() > 40 ) {
+            String str = title_str.substring(0, 40);
+            title_str = str + "...";
+        }
+        viewHolder.title.setText(title_str);
         viewHolder.chk_title.setChecked(customer.getSms_sent() == 1);
         if (customer.isSms_sent() == 1) {
             viewHolder.title.setTextColor(viewHolder.chk_title.getContext().getResources().getColor(R.color.colorAccent));
