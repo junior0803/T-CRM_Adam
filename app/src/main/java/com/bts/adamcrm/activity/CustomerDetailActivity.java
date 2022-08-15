@@ -1029,6 +1029,9 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 customer.setReminder_date(edt_reminder_date.getText().toString());
                 getDateAndSetupAlarm(customer.getReminder_date());
             } else {
+                if (!customer.getReminder_date().equals("")) {
+                    getDateAndCancelAlarm(customer.getReminder_date());
+                }
                 customer.setReminder_date("");
             }
             customer.setAttached_files(new Gson().toJson(attachmentList));
@@ -1110,8 +1113,28 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
         Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
         intent.putExtra("time", time);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), (int) time, intent, PendingIntent.FLAG_ONE_SHOT);
         am.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+    }
+
+    private void getDateAndCancelAlarm(String strDate) {
+        try {
+            if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate).getTime() >= new Date().getTime()){
+                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate);
+                cancelAlarm(date.getTime());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void cancelAlarm(long time) {
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        intent.putExtra("time", time);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), (int) time, intent, PendingIntent.FLAG_ONE_SHOT);
+        am.cancel(pendingIntent);
     }
 
     private void deleteItem(Activity activity, Customer customer) {

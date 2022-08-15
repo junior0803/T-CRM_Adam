@@ -2,9 +2,12 @@ package com.bts.adamcrm.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -47,6 +50,7 @@ import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Nav;
+import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.ImageFileFilter;
 import com.bts.adamcrm.util.ImageUtils;
@@ -320,11 +324,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         || selected_category.getName().equals("All Categories")
                         || selected_category.getId() == customerList.get(i).getCategory_id()){
                     Log("All Category");
-                    if (selectedState == 4 && customerList.get(i).getReminder_date() != null ){
-                        String ss = customerList.get(i).getReminder_date();
-                        boolean bbb = ss.equals("");
-                        if( bbb == false )
-                            visibleList.add(customerList.get(i));
+                    if (selectedState == 4 && customerList.get(i).getReminder_date() != null
+                            && !customerList.get(i).getReminder_date().equals("")){
+                        visibleList.add(customerList.get(i));
                     } else if (selectedState == 0 || customerList.get(i).getState() == selectedState) {
                         visibleList.add(customerList.get(i));
                     }
@@ -432,7 +434,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     Log("customList : " + response.body() + " size : " + response.body().size());
                     for (Customer customer : response.body()){
                         customerList.add(customer);
-                        if (customer.getReminder_date() != null) {
+                        if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")) {
                             try {
                                 if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm")
                                         .parse(customer.getReminder_date())).getTime() <= new Date().getTime()) {
@@ -444,7 +446,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                         String str = remind_str.substring(0, 36);
                                         remind_str = str + "...";
                                     }
-
+                                    getDateAndSetupAlarm(customer.getReminder_date());
                                     str_reminder = str_reminder + remind_str + " <br>";
                                 }
                             } catch (ParseException e) {
@@ -472,6 +474,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         });
     }
 
+    private void getDateAndSetupAlarm(String strDate) {
+        try {
+            if (new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate).getTime() >= new Date().getTime()){
+                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(strDate);
+                setupAlarm(date.getTime());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupAlarm(long time) {
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        intent.putExtra("time", time);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), (int) time, intent, PendingIntent.FLAG_ONE_SHOT);
+        am.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+    }
 
     private void updateActiveDevices(){
     }

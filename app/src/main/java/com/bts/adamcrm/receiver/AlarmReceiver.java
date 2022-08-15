@@ -28,18 +28,27 @@ import com.bts.adamcrm.activity.MainActivity;
 import com.bts.adamcrm.util.SharedPreferencesManager;
 
 public class AlarmReceiver  extends BroadcastReceiver {
+    String ALARM_KEY_GROUP = "com.adam.crm.WORK_ALARM";
     @Override
     public void onReceive(Context context, Intent intent) {
-        Bundle bundle = intent.getExtras();
-
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock newWakeLock = powerManager.newWakeLock(PARTIAL_WAKE_LOCK, "");
-        newWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
-        newWakeLock.release();
-        showNotificationMessage(context);
+        int id = 1;
+        if (intent != null) {
+            Bundle bundle = intent.getExtras();
+            if (bundle == null) {
+                id = 0;
+            } else {
+                id = (int) bundle.getLong("time");
+                Log.e("junior", "id = " + id);
+            }
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock newWakeLock = powerManager.newWakeLock(PARTIAL_WAKE_LOCK, "");
+            newWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
+            newWakeLock.release();
+            showNotificationMessage(context, id);
+        }
     }
 
-    private void showNotificationMessage(Context context) {
+    private void showNotificationMessage(Context context, int requestCode) {
         Log.e("junior", "showNotificationMessage");
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -62,18 +71,19 @@ public class AlarmReceiver  extends BroadcastReceiver {
                 .setContentText("please check your application for reminders.")
                 .setDefaults(5)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setContentIntent(PendingIntent.getActivity(context, 1, intent,
+                .setContentIntent(PendingIntent.getActivity(context, requestCode, intent,
                         PendingIntent.FLAG_ONE_SHOT ))
+                .setGroup(ALARM_KEY_GROUP)
                 .setVibrate(new long[]{800, 500, 600, 300});
-        TaskStackBuilder create = TaskStackBuilder.create(context);
-        create.addNextIntent(intent);
-        contentIntent.setContentIntent(create.getPendingIntent(0,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE ));
+//        TaskStackBuilder create = TaskStackBuilder.create(context);
+//        create.addNextIntent(intent);
+//        contentIntent.setContentIntent(create.getPendingIntent(0,
+//                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE ));
         NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
         bigTextStyle.setBigContentTitle("T-CRM Reminder");
         bigTextStyle.bigText("please check your application for reminders.");
         contentIntent.setStyle(bigTextStyle);
-        notificationManager.notify(1, contentIntent.build());
+        notificationManager.notify(requestCode, contentIntent.build());
 
         // new Value Reminder
         SharedPreferencesManager.getInstance(context).setBooleanValue("update", true);
