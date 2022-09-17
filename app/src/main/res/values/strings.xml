@@ -144,5 +144,7 @@
     <string name="search_here">Search here ...</string>
     <string name="permission_check_message">"If you reject permission,you can not attach file\n\nPlease turn on permissions at [Setting] > [Permission]"</string>
     <string name="attach_document">Attach Document</string>
+    <string name="alert">Alert</string>
+    <string name="discard_change">Do you wan to discard the change?</string>
 
 </resources>

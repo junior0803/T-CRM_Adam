@@ -3,12 +3,14 @@ package com.bts.adamcrm.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -16,6 +18,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -499,42 +502,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 .setDeniedMessage(R.string.permission_check_message)
                 .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .check();
-        // file attach implement begin
-//        Dialog dialog = new Dialog(activity);
-//        dialog.requestWindowFeature(1);
-//        dialog.setContentView(R.layout.dialog_selector);
-//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-//        ((ImageView) dialog.findViewById(R.id.btn_close)).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//                TedPermission.create()
-//                        .setPermissionListener(permissionListener)
-//                        .setDeniedMessage(R.string.permission_check_message)
-//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                        .check();
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-//                } else {
-//                    dispatchTakePictureIntent();
-//                }
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.show();
-        // file attach implement end
+
     }
 
     @Override
@@ -1029,7 +997,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 customer.setReminder_date(edt_reminder_date.getText().toString());
                 getDateAndSetupAlarm(customer.getReminder_date());
             } else {
-                if (!customer.getReminder_date().equals("")) {
+                if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")) {
                     getDateAndCancelAlarm(customer.getReminder_date());
                 }
                 customer.setReminder_date("");
@@ -1305,5 +1273,28 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 progressDialog.show();
             }
         });
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            clickBackDialog();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void clickBackDialog() {
+        new AlertDialog.Builder(this)
+            .setMessage(R.string.discard_change)
+            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface arg0, int arg1) {
+                    finish();
+                }
+            })
+            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface arg0, int arg1) {
+                }
+            })
+            .show();
     }
 }
