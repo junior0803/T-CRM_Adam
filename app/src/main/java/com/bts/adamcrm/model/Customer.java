@@ -10,9 +10,6 @@ public class Customer {
     @SerializedName("id")
     @Expose
     public int id;
-//    @SerializedName("attachments")
-//    @Expose
-//    List<Attachment> attachments = new ArrayList();
 
     @SerializedName("title")
     @Expose
@@ -38,10 +35,6 @@ public class Customer {
     @SerializedName("further_note")
     @Expose
     public String further_note;
-
-//    @SerializedName("invoices")
-//    @Expose
-//    List<Invoice> invoices = new ArrayList();
 
     @SerializedName("state")
     @Expose
