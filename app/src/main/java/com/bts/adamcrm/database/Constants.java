@@ -1,11 +1,7 @@
 package com.bts.adamcrm.database;
 
-import android.telephony.mbms.StreamingServiceInfo;
-
-import java.util.stream.Stream;
-
 public class Constants {
-    //column names of customer table
+    //column names of Customer table
     public static final String TABLE_CUSTOMER = "customers";
     public static final String CUSTOMER_ID = "id";
     public static final String CUSTOMER_TITLE = "title";
@@ -24,12 +20,12 @@ public class Constants {
     public static final String CUSTOMER_CREATE = "created_at";
     public static final String CUSTOMER_UPDATE = "updated_at";
 
-    //column names of category table
+    //column names of Category table
     public static final String TABLE_CATEGORY = "category";
     public static final String CATEGORY_ID = "id";
     public static final String CATEGORY_NAME = "name";
     public static final String CATEGORY_SORT = "sort";
-    public static final String CATEGORY_CRATE = "created_at";
+    public static final String CATEGORY_CREATE = "created_at";
     public static final String CATEGORY_UPDATED = "updated_at";
 
     //column names of Attachment table
@@ -37,7 +33,7 @@ public class Constants {
     public static final String ATTACHMENT_ID = "id";
     public static final String ATTACHMENT_FILE = "file_path";
 
-    // column names of sort table
+    // column names of Stock table
     public static final String TABLE_STOCK = "stock";
     public static final String STOCK_ID = "id";
     public static final String STOCK_QUANTITY = "q";

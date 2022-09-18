@@ -57,27 +57,15 @@ public class Customer {
     @SerializedName("updated_at")
     @Expose
     public String Date_updated;
-//    @SerializedName(NotificationCompat.CATEGORY_STATUS)
-//    @Expose
-//    public int status;
-
-
-//    @SerializedName(NotificationCompat.CATEGORY_REMINDER)
-//    @Expose
-//    public boolean reminder = false;
-//
-//    @SerializedName("sms_sent")
-//    @Expose
-//    public boolean sms_sent = false;
-
 
     public Customer() {
     }
 
-    public Customer(String title, String mobile_phone, String email, String name,
+    public Customer(int id, String title, String mobile_phone, String email, String name,
                     String address, String town, String postal_code, String further_note,
                     int state, String reminder_date, int category_id, int sms_sent,
                     String attached_files, String date_created, String date_updated) {
+        this.id = id;
         this.title = title;
         this.mobile_phone = mobile_phone;
         this.email = email;
@@ -227,6 +215,6 @@ public class Customer {
 
     public void setDate_updated(String date_updated) {
         Date_updated =
-                TimeUtils.formatDate(date_updated, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);;
+                TimeUtils.formatDate(date_updated, TimeUtils.UI_DATE_TIME_FORMAT, TimeUtils.DB_DATE_TIME_FORMAT);
     }
 }

@@ -1,5 +1,6 @@
 package com.bts.adamcrm.database;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -19,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         static final DatabaseHelper databaseHelper = new DatabaseHelper();
     }
 
-    public static DatabaseHelper getInstance() {
+    public static DatabaseHelper getInstance(Context context) {
         return DatabaseHelperHolder.databaseHelper;
     }
 
@@ -49,7 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + CATEGORY_NAME + " TEXT NOT NULL, "
                 + CATEGORY_SORT + " INTEGER NOT NULL, "
-                + CATEGORY_CRATE + " TEXT, " //nullable
+                + CATEGORY_CREATE + " TEXT, " //nullable
                 + CATEGORY_UPDATED + " TEXT" //nullable
                 + ")";
 
@@ -60,14 +61,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String CREATE_STOCK_TABLE = "CREATE TABLE " + TABLE_STOCK + "("
                 + STOCK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + STOCK_QUANTITY + " INTEGER NOT NULL, "
-                + STOCK_MINIMUM + " INTEGER NOT NULL, "
-                + STOCK_DESCRIPTION + " INTEGER NOT NULL, "
-                + STOCK_PNO + " INTEGER NOT NULL, "
+                + STOCK_QUANTITY + " TEXT NOT NULL, "
+                + STOCK_MINIMUM + " TEXT NOT NULL, "
+                + STOCK_DESCRIPTION + " TEXT NOT NULL, "
+                + STOCK_PNO + " TEXT NOT NULL, "
                 + STOCK_SHOPPING + " INTEGER NOT NULL, "
                 + STOCK_TYPE + " INTEGER NOT NULL, "
-                + STOCK_CREATE + " INTEGER NOT NULL, "
-                + STOCK_UPDATE + " INTEGER NOT NULL"
+                + STOCK_CREATE + " TEXT NOT NULL, "
+                + STOCK_UPDATE + " INTEGER"
                 + ")";
 
         sqLiteDatabase.execSQL(CREATE_CUSTOMER_TABLE);
