@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
 import com.bts.adamcrm.adapter.CategoryAdapter;
+import com.bts.adamcrm.database.CategoryQueryImplementation;
+import com.bts.adamcrm.database.QueryContract;
+import com.bts.adamcrm.database.QueryResponse;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 
@@ -85,12 +88,12 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
         view.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteItem(CategoryActivity.this, categoryList.get(position));
+                deleteItem(CategoryActivity.this, categoryList.get(position), position);
             }
         });
     }
 
-    private void deleteItem(Activity activity, Category category) {
+    private void deleteItem(Activity activity, Category category, int position) {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(1);
         dialog.setContentView(R.layout.dialog_delete_item);
@@ -105,7 +108,7 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.body() != null){
                             Log("onResponse : " + response.body() + " position : " + category.getId());
-                            showData();
+                            reloadAllCategories();
                         }
                         sharedPreferencesManager.setBooleanValue("update", true);
                         dialog.dismiss();
@@ -129,24 +132,65 @@ public class CategoryActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void showData() {
-        Log("showData");
-        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+        QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+        categoryQuery.getAllCategories(new QueryResponse<List<Category>>() {
             @Override
-            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
-                Log(response.raw().toString());
-                if (response.body() != null) {
+            public void onSuccess(List<Category> data) {
+                if (data != null) {
                     if (progressDialog.isShowing()){
                         progressDialog.dismiss();
                     }
-                    Log("size : "+ response.body().size());
-                    categoryList = response.body();
+                    categoryList = data;
                     categoryAdapter.updateAdapter(categoryList);
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Category>> call, Throwable t) {
+            public void onFailure(String message) {
+                progressDialog.dismiss();
+            }
+        });
+    }
 
+    private void reloadAllCategories(){
+        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    Log("size : "+ response.body().size());
+                    QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+                    categoryQuery.deleteAllCategories(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("delete category successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("delete category failed");
+                        }
+                    });
+                    for (Category category1 : response.body()){
+                        categoryQuery.insertCategory(category1, new QueryResponse<Category>() {
+                            @Override
+                            public void onSuccess(Category data) {
+                                Log("categoryList added");
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+                                Log("category add Failed");
+                            }
+                        });
+                    }
+                    showData();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
             }
         });
     }

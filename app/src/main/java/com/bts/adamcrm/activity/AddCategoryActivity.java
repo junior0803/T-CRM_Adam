@@ -13,6 +13,9 @@ import android.widget.TextView;
 
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.database.CategoryQueryImplementation;
+import com.bts.adamcrm.database.QueryContract;
+import com.bts.adamcrm.database.QueryResponse;
 import com.bts.adamcrm.model.Category;
 import com.google.gson.Gson;
 
@@ -78,12 +81,22 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
                 } else {
                     if (category_str == null || category_str.equals("")){
                         progressDialog.show();
-                        //category = new Category(edt_title.getText().toString(), )
                         apiRepository.getApiService().createCategory(edt_title.getText().toString()).enqueue(new Callback<ResponseBody>() {
                             @Override
                             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                 if (response.isSuccessful() && response.body() != null){
-                                    showToast("Category Created!");
+                                    QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+                                    categoryQuery.insertCategory(new Category(edt_title.getText().toString()), new QueryResponse<Category>() {
+                                        @Override
+                                        public void onSuccess(Category data) {
+                                            showToast("Category Created!");
+                                        }
+
+                                        @Override
+                                        public void onFailure(String message) {
+
+                                        }
+                                    });
                                     sharedPreferencesManager.setBooleanValue("update", true);
                                 }
                                 progressDialog.dismiss();
@@ -103,7 +116,18 @@ public class AddCategoryActivity extends BaseActivity implements View.OnClickLis
                                     @Override
                                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                         if (response.isSuccessful() && response.body() != null){
-                                            showToast("Category Updated!");
+                                            QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+                                            categoryQuery.updateCategoryInfo(new Category(category.getId(), edt_title.getText().toString()), new QueryResponse<Boolean>() {
+                                                @Override
+                                                public void onSuccess(Boolean data) {
+                                                    showToast("Category Updated!");
+                                                }
+
+                                                @Override
+                                                public void onFailure(String message) {
+
+                                                }
+                                            });
                                             progressDialog.dismiss();
                                             sharedPreferencesManager.setBooleanValue("update", true);
                                             exit();

@@ -18,7 +18,7 @@ import java.util.List;
 public class AttachmentQueryImplementation implements QueryContract.AttachmentQuery {
 
     // Attachment Table Operation
-    public void insertAttachment(Attachment attachment, QueryResponse<Boolean> response) {
+    public void insertAttachment(Attachment attachment, QueryResponse<Attachment> response) {
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(context);
         SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
 
@@ -26,8 +26,8 @@ public class AttachmentQueryImplementation implements QueryContract.AttachmentQu
 
         try {
             long id = sqLiteDatabase.insertOrThrow(TABLE_ATTACHMENT, null, contentValues);
-            if(id > 0) {
-                response.onSuccess(true);
+            if (id > 0) {
+                response.onSuccess(attachment);
                 attachment.setId((int) id);
             }
             else
@@ -161,10 +161,7 @@ public class AttachmentQueryImplementation implements QueryContract.AttachmentQu
 
     private ContentValues getContentValuesForAttachment(Attachment attachment){
         ContentValues contentValues = new ContentValues();
-
-        contentValues.put(Constants.ATTACHMENT_ID, attachment.getId());
         contentValues.put(Constants.ATTACHMENT_FILE, attachment.getFile_path());
-
         return contentValues;
     }
 

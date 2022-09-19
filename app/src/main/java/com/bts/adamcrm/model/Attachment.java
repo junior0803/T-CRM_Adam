@@ -12,6 +12,10 @@ public class Attachment {
     @Expose
     public String file_path;
 
+    public Attachment(String file_path){
+        this.file_path = file_path;
+    }
+
     public Attachment(int id, String file_path){
         this.id = id;
         this.file_path = file_path;

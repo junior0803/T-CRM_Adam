@@ -44,6 +44,11 @@ import com.bts.adamcrm.adapter.Attachment2Adapter;
 import com.bts.adamcrm.adapter.CustomerAdapter;
 import com.bts.adamcrm.adapter.NavAdapter;
 import com.bts.adamcrm.adapter.StatusAdapter;
+import com.bts.adamcrm.database.AttachmentQueryImplementation;
+import com.bts.adamcrm.database.CategoryQueryImplementation;
+import com.bts.adamcrm.database.CustomerQueryImplementation;
+import com.bts.adamcrm.database.QueryContract;
+import com.bts.adamcrm.database.QueryResponse;
 import com.bts.adamcrm.helper.OnStartDragListener;
 import com.bts.adamcrm.helper.SimpleItemTouchHelperCallback;
 import com.bts.adamcrm.model.Attachment;
@@ -176,11 +181,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     public void onResume(){
         super.onResume();
         if (sharedPreferencesManager.getBooleanValue("update")){
-            loadCategories();
-            loadAllData();
-            loadAllAttachments();
+            reloadAll();
             sharedPreferencesManager.setBooleanValue("update", false);
         }
+    }
+
+    private void reloadAll(){
+        reloadAllCategories();
+        reloadAllData();
+        reloadAllAttachments();
+    }
+
+    private void loadAll(){
+        loadAllCategories();
+        loadAllData();
+        loadAllAttachments();
     }
 
     private void showFileChooser() {
@@ -198,7 +213,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         ButterKnife.bind(this);
         loadingProgress = new ProgressDialog(this);
         sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
-        sharedPreferencesManager.setBooleanValue("update", true);
+//        sharedPreferencesManager.setBooleanValue("update", true);
 
         Intent intent = new Intent();
         String pkgName = getPackageName();
@@ -280,12 +295,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         
         mItemTouchHelper = new ItemTouchHelper(new SimpleItemTouchHelperCallback(customerAdapter));
         mItemTouchHelper.attachToRecyclerView(tasks_recycler);
-
+        loadAll();
     }
 
     private void showCustomerData() {
         visibleList = new ArrayList<>();
-        //visibleList = customerList;
         String startTime = " 00:00:00";
         String endTime = " 23:59:59";
         for (int i = 0; i < customerList.size(); i ++){
@@ -319,11 +333,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     e.printStackTrace();
                 }
             } else {
-                Log("showCustomerData case 1 selected_category : " + selected_category);
                 if (selected_category == null
                         || selected_category.getName().equals("All Categories")
                         || selected_category.getId() == customerList.get(i).getCategory_id()){
-                    Log("All Category");
                     if (selectedState == 4 && customerList.get(i).getReminder_date() != null
                             && !customerList.get(i).getReminder_date().equals("")){
                         visibleList.add(customerList.get(i));
@@ -374,27 +386,67 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     }
 
-    private void loadCategories(){
+    private void reloadAllCategories(){
         apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 Log(response.raw().toString());
                 if (response.body() != null) {
-                    categoryList = new ArrayList<>();
-                    Category category = new Category(getString(R.string.all_categories));
-                    categoryList.add(category);
-                    selected_category = category;
                     Log("size : "+ response.body().size());
-                    categoryList.addAll(response.body());
-                    setupCategorySpinner(categoryList);
+                    QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+                    categoryQuery.deleteAllCategories(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("delete category successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("delete category failed");
+                        }
+                    });
+                    for (Category category1 : response.body()){
+                        categoryQuery.insertCategory(category1, new QueryResponse<Category>() {
+                            @Override
+                            public void onSuccess(Category data) {
+                                Log("categoryList added");
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+                                Log("category add Failed");
+                            }
+                        });
+                    }
+                    loadAllCategories();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Category>> call, Throwable t) {
-
+                showToast("Please Activate internet connection!");
             }
         });
+    }
+
+    private void loadAllCategories(){
+        categoryList = new ArrayList<>();
+        Category category = new Category(getString(R.string.all_categories));
+        categoryList.add(category);
+        selected_category = category;
+        QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+        categoryQuery.getAllCategories(new QueryResponse<List<Category>>() {
+            @Override
+            public void onSuccess(List<Category> data) {
+                categoryList.addAll(data);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log("category load Failed");
+            }
+        });
+        setupCategorySpinner(categoryList);
     }
 
     public void setupCategorySpinner(List<Category> list) {
@@ -407,51 +459,91 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         spn_category.setAdapter(arrayAdapter);
     }
 
-    private void loadAllAttachments(){
+    private void reloadAllAttachments(){
         apiRepository.getApiService().get_attach_files().enqueue(new Callback<List<Attachment>>(){
             @Override
             public void onResponse(Call<List<Attachment>> call, Response<List<Attachment>> response) {
                 if (response.isSuccessful() && response.body() != null){
                     Log("response : " + response.body().size());
-                    attachmentList = new ArrayList<>(response.body());
+                    QueryContract.AttachmentQuery attachmentQuery = new AttachmentQueryImplementation();
+                    attachmentQuery.deleteAllAttachments(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("attachment Table deleted successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+
+                        }
+                    });
+                    for (Attachment attachment : response.body()){
+                        attachmentQuery.insertAttachment(attachment, new QueryResponse<Attachment>() {
+                            @Override
+                            public void onSuccess(Attachment attachment) {
+                                Log("insert attachment " + attachment);
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+                                Log("error attachment " + message);
+                            }
+                        });
+                    }
                 }
+                loadAllAttachments();
             }
 
             @Override
             public void onFailure(Call<List<Attachment>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+            }
+        });
+    }
+
+    private void loadAllAttachments(){
+        attachmentList = new ArrayList<>();
+        QueryContract.AttachmentQuery attachmentQuery = new AttachmentQueryImplementation();
+        attachmentQuery.getAllAttachments(new QueryResponse<List<Attachment>>() {
+            @Override
+            public void onSuccess(List<Attachment> data) {
+                attachmentList.addAll(data);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log("load Attachments error");
             }
         });
     }
 
     private void loadAllData(){
-        progressDialog.show();
-        apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
+        str_reminder = "";
+        customerList = new ArrayList<>();
+        QueryContract.CustomerQuery customerQuery = new CustomerQueryImplementation();
+        customerQuery.getAllCustomers(new QueryResponse<List<Customer>>() {
             @Override
-            public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
-                str_reminder = "";
-                customerList = new ArrayList<>();
-                if (response.isSuccessful() && response.body() != null){
-                    Log("customList : " + response.body() + " size : " + response.body().size());
-                    for (Customer customer : response.body()){
-                        customerList.add(customer);
-                        if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")) {
-                            try {
-                                if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                                        .parse(customer.getReminder_date())).getTime() <= new Date().getTime()) {
+            public void onSuccess(List<Customer> data) {
+                Log("loadAllData data size : " + data.size());
+                for (Customer customer : data){
+                    customerList.add(customer);
+                    if (customer.getReminder_date() != null && !customer.getReminder_date().equals("")) {
+                        try {
+                            if (Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd HH:mm")
+                                    .parse(customer.getReminder_date())).getTime() <= new Date().getTime()) {
 
-                                    String remind_str = customer.getTitle();
+                                String remind_str = customer.getTitle();
 
-                                    int mmm = remind_str.length();
-                                    if ( remind_str.length() > 36 ) {
-                                        String str = remind_str.substring(0, 36);
-                                        remind_str = str + "...";
-                                    }
-                                    getDateAndSetupAlarm(customer.getReminder_date());
-                                    str_reminder = str_reminder + remind_str + " <br>";
+                                int mmm = remind_str.length();
+                                if ( remind_str.length() > 36 ) {
+                                    String str = remind_str.substring(0, 36);
+                                    remind_str = str + "...";
                                 }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+                                getDateAndSetupAlarm(customer.getReminder_date());
+                                str_reminder = str_reminder + remind_str + " <br>";
                             }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -468,10 +560,55 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             }
 
             @Override
-            public void onFailure(Call<List<Customer>> call, Throwable t) {
+            public void onFailure(String message) {
                 progressDialog.dismiss();
             }
         });
+    }
+
+    private void reloadAllData(){
+        progressDialog.show();
+        apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
+            @Override
+            public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log("customList : " + response.body() + " size : " + response.body().size());
+
+                    QueryContract.CustomerQuery customerQuery = new CustomerQueryImplementation();
+                    customerQuery.deleteAllCustomers(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("Customer table deleted");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("Customer table delete failed");
+                        }
+                    });
+                    for (Customer customer : response.body()) {
+                        customerQuery.insertCustomer(customer, new QueryResponse<Customer>() {
+                            @Override
+                            public void onSuccess(Customer data) {}
+
+                            @Override
+                            public void onFailure(String message) {
+                                Log("customer error");
+                            }
+                        });
+                    }
+                    Log("customer table reloaded");
+                    loadAllData();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Customer>> call, Throwable t) {
+                progressDialog.dismiss();
+                showToast("Please Activate internet connection!");
+            }
+        });
+
     }
 
     private void getDateAndSetupAlarm(String strDate) {
@@ -560,9 +697,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 CustomerDetailActivity.launch(this);
                 break;
             case R.id.btn_sync:
-                loadCategories();
-                loadAllData();
-                loadAllAttachments();
+                reloadAll();
                 break;
             case R.id.action_search:
                 if (search_wrapper.getVisibility() == View.VISIBLE){
@@ -695,7 +830,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             dialog1.setContentView(R.layout.dialog_delete_item);
             ((TextView) dialog1.findViewById(R.id.dialog_title)).setText(R.string.delete_item);
             ((TextView) dialog1.findViewById(R.id.txt)).setText("Are you sure you want to delete attachment " + attachmentList.get(position).getFile_path() + " ?");
-            dialog1.findViewById(R.id.btn_accept).setOnClickListener(view12 -> apiRepository.getApiService().deleteAttachFile(attachmentList.get(position).getFile_path()).enqueue(new Callback<String>() {
+            dialog1.findViewById(R.id.btn_accept).setOnClickListener(
+                    view12 -> apiRepository.getApiService().deleteAttachFile(attachmentList.get(position).getFile_path()).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String > call, Response<String> response) {
                     if (response.isSuccessful()
@@ -708,6 +844,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         if (attachmentList.size() == 0){
                             dialog.dismiss();
                         }
+                        QueryContract.AttachmentQuery attachmentQuery = new AttachmentQueryImplementation();
+                        attachmentQuery.deleteAttachmentById(attachmentList.get(position).getId(), new QueryResponse<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean data) {
+                                Log("Attachment File Deleted Successfully");
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+                                Log("Attachment File Delete Failed");
+                            }
+                        });
                     }
                 }
 
@@ -727,41 +875,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 .setDeniedMessage(R.string.permission_check_message)
                 .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .check();
-        // file select dialog begin
-//        Dialog dialog = new Dialog(activity);
-//        dialog.requestWindowFeature(1);
-//        dialog.setContentView(R.layout.dialog_selector);
-//        ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_attach_file);
-//        dialog.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_file).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                TedPermission.create()
-//                        .setPermissionListener(permissionListener)
-//                        .setDeniedMessage(R.string.permission_check_message)
-//                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                        .check();
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.findViewById(R.id.btn_img).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-//                    requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-//                } else {
-//                    dispatchTakePictureIntent();
-//                }
-//                dialog.dismiss();
-//            }
-//        });
-//        dialog.show();
-        // file select dialog end
     }
 
     @Override
@@ -1015,7 +1128,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 if (response.isSuccessful()){
                     Log("response : " + response.body());
                     String uploadFile = response.body();
-                    showToast("upload File :" + uploadFile);
+                    QueryContract.AttachmentQuery attachmentQuery = new AttachmentQueryImplementation();
+                    attachmentQuery.insertAttachment(new Attachment(uploadFile), new QueryResponse<Attachment>() {
+                        @Override
+                        public void onSuccess(Attachment data) {
+                            showToast("upload File :" + uploadFile);
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+
+                        }
+                    });
                     loadAllAttachments();
                 }
                 progressDialog.dismiss();
@@ -1024,7 +1148,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             @Override
             public void onFailure(@NonNull Call<String> call, Throwable t) {
                 showToast("Please Activate internet connection!");
-                progressDialog.show();
+                progressDialog.dismiss();
             }
         });
     }

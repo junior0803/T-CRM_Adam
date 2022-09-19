@@ -25,7 +25,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean getBooleanValue(String str){
-        return this.sharePrefs.getBoolean(str, false);
+        return this.sharePrefs.getBoolean(str, true);
     }
 
     public void setBooleanValue(String str, boolean z){

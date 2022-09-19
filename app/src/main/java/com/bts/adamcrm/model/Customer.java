@@ -61,11 +61,10 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(int id, String title, String mobile_phone, String email, String name,
+    public Customer(String title, String mobile_phone, String email, String name,
                     String address, String town, String postal_code, String further_note,
                     int state, String reminder_date, int category_id, int sms_sent,
                     String attached_files, String date_created, String date_updated) {
-        this.id = id;
         this.title = title;
         this.mobile_phone = mobile_phone;
         this.email = email;

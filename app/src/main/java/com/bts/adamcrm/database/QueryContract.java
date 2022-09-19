@@ -9,7 +9,7 @@ import java.util.List;
 
 public class QueryContract {
     public interface CustomerQuery {
-        void insertCustomer(Customer student, QueryResponse<Boolean> response);
+        void insertCustomer(Customer customer, QueryResponse<Customer> response);
         void getCustomerById(int customerId, QueryResponse<Customer> response);
         void getAllCustomers(QueryResponse<List<Customer>> response);
         void updateCustomerInfo(Customer customer, QueryResponse<Boolean> response);
@@ -18,7 +18,7 @@ public class QueryContract {
     }
 
     public interface CategoryQuery {
-        void insertCategory(Category category, QueryResponse<Boolean> response);
+        void insertCategory(Category category, QueryResponse<Category> response);
         void getAllCategories(QueryResponse<List<Category>> response);
         void getCategoryById(int categoryId, QueryResponse<Category> response);
         void updateCategoryInfo(Category category, QueryResponse<Boolean> response);
@@ -27,7 +27,7 @@ public class QueryContract {
     }
 
     public interface AttachmentQuery {
-        void insertAttachment(Attachment attachment, QueryResponse<Boolean> response);
+        void insertAttachment(Attachment attachment, QueryResponse<Attachment> response);
         void getAllAttachments(QueryResponse<List<Attachment>> response);
         void getAttachmentById(int attachmentId, QueryResponse<Attachment> response);
         void updateAttachmentInfo(Attachment attachment, QueryResponse<Boolean> response);

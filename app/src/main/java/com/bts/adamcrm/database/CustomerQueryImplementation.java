@@ -21,7 +21,7 @@ import java.util.List;
 public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
 
     // Customer Table Operation
-    public void insertCustomer(Customer customer, QueryResponse<Boolean> response){
+    public void insertCustomer(Customer customer, QueryResponse<Customer> response){
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(context);
         SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
 
@@ -30,7 +30,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
         try {
             long id = sqLiteDatabase.insertOrThrow(TABLE_CUSTOMER, null, contentValues);
             if(id > 0) {
-                response.onSuccess(true);
+                response.onSuccess(customer);
                 customer.setId((int) id);
             }
             else
@@ -185,7 +185,6 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
     }
 
     private Customer getCustomerFromCursor(Cursor cursor){
-        int id = cursor.getInt(cursor.getColumnIndex(CUSTOMER_ID));
         String title = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_TITLE));
         String mobile_phone = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_PHONE));
         String email = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_EMAIL));
@@ -202,7 +201,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
         String created_at = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_CREATE));
         String updated_at = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_UPDATE));
 
-        return new Customer(id, title, mobile_phone, email, name, address, town, postal_code,
+        return new Customer(title, mobile_phone, email, name, address, town, postal_code,
                 further_note, state, remind_date, category_id, sms_sent, attached_files, created_at, updated_at);
     }
 }

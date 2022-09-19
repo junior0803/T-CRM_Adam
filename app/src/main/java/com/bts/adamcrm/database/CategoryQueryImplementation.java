@@ -17,7 +17,7 @@ import java.util.List;
 public class CategoryQueryImplementation implements QueryContract.CategoryQuery{
 
     // Category Table Operation
-    public void insertCategory(Category category, QueryResponse<Boolean> response){
+    public void insertCategory(Category category, QueryResponse<Category> response){
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(context);
         SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
 
@@ -26,7 +26,7 @@ public class CategoryQueryImplementation implements QueryContract.CategoryQuery{
         try {
             long id = sqLiteDatabase.insertOrThrow(TABLE_CATEGORY, null, contentValues);
             if (id > 0) {
-                response.onSuccess(true);
+                response.onSuccess(category);
                 category.setId((int) id);
             }
             else

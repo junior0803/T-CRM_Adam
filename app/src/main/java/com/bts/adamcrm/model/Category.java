@@ -27,6 +27,11 @@ public class Category {
         this.name = name;
     }
 
+    public Category(int id, String name){
+        this.name = name;
+        this.id = id;
+    }
+
     public Category(int id, String name, int sort){
         this.name = name;
         this.id = id;
