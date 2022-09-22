@@ -450,7 +450,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 showToast("Please Activate internet connection!");
-                progressDialog.show();
+                progressDialog.dismiss();
             }
         });
     }

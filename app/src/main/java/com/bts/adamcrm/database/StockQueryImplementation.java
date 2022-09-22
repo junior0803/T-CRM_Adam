@@ -1,7 +1,6 @@
 package com.bts.adamcrm.database;
 
 import static com.bts.adamcrm.MyApplication.context;
-import static com.bts.adamcrm.database.Constants.ATTACHMENT_ID;
 import static com.bts.adamcrm.database.Constants.STOCK_ID;
 import static com.bts.adamcrm.database.Constants.TABLE_STOCK;
 
@@ -19,7 +18,7 @@ import java.util.List;
 public class StockQueryImplementation implements QueryContract.StockQuery{
     
     // Stock Table Operation
-    public void insertStock(StockItem stock, QueryResponse<Boolean> response) {
+    public void insertStock(StockItem stock, QueryResponse<StockItem> response) {
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(context);
         SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
 
@@ -28,7 +27,7 @@ public class StockQueryImplementation implements QueryContract.StockQuery{
         try {
             long id = sqLiteDatabase.insertOrThrow(TABLE_STOCK, null, contentValues);
             if(id > 0) {
-                response.onSuccess(true);
+                response.onSuccess(stock);
                 stock.setId((int) id);
             }
             else
@@ -53,7 +52,33 @@ public class StockQueryImplementation implements QueryContract.StockQuery{
                 do {
                     StockItem stock = getStockFromCursor(cursor);
                     StockList.add(stock);
+                }   while (cursor.moveToNext());
+                response.onSuccess(StockList);
+            } else {
+                response.onFailure("There are no student in database");
+            }
+        } catch (Exception e){
+            response.onFailure(e.getMessage());
+        } finally {
+            if(cursor!=null)
+                cursor.close();
+            sqLiteDatabase.close();
+        }
+    }
 
+    public void getStocksInParts(int is_shopping, int type, QueryResponse<List<StockItem>> response){
+        DatabaseHelper databaseHelper = DatabaseHelper.getInstance(context);
+        SQLiteDatabase sqLiteDatabase = databaseHelper.getReadableDatabase();
+
+        Cursor cursor = null;
+        try {
+            cursor = sqLiteDatabase.query(TABLE_STOCK, null, "is_shopping=? and type=?",
+                    new String[]{String.valueOf(is_shopping), String.valueOf(type)}, null, null, null, null);
+            if(cursor != null && cursor.moveToFirst()){
+                List<StockItem> StockList = new ArrayList<>();
+                do {
+                    StockItem stock = getStockFromCursor(cursor);
+                    StockList.add(stock);
                 }   while (cursor.moveToNext());
                 response.onSuccess(StockList);
             } else {

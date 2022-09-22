@@ -65,6 +65,8 @@ public interface ApiService {
     @GET("/deleteParts/{id}")
     Call <ResponseBody> deletePart(@Path("id") int id);
 
+    @GET("/api/partsList/")
+    Call <List<StockItem>> getAllPartItemList();
 
     @GET("/api/partsList/{type}/{is_shop}")
     Call <List<StockItem>> getPartItemList(@Path("is_shop") int is_shop, @Path("type") int type);
@@ -100,6 +102,9 @@ public interface ApiService {
 
     @GET("deleteCustomer/{id}")
     Call <String> deleteCustomer(@Path("id") int id);
+
+    @GET("getInvoiceList/")
+    Call <List<Invoice>> getAllInvoiceList();
 
     @GET("getInvoiceList/{id}")
     Call <List<Invoice>> getInvoiceList(@Path("id") int customer_id);

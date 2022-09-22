@@ -17,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bts.adamcrm.BaseActivity;
 import com.bts.adamcrm.R;
 import com.bts.adamcrm.adapter.StockItemAdapter;
+import com.bts.adamcrm.database.QueryContract;
+import com.bts.adamcrm.database.QueryResponse;
+import com.bts.adamcrm.database.StockQueryImplementation;
 import com.bts.adamcrm.model.StockItem;
 import com.bts.adamcrm.util.RecyclerItemClickListener;
 
@@ -99,27 +102,77 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                 showEditDialog(StockListActivity.this, stockItemList.get(position));
             }
         }));
-        loadAllData();
+        if (sharedPreferencesManager.getBooleanValue("part_update")){
+            reloadAllStocks();
+        } else {
+            loadStockData();
+        }
     }
 
-    private void loadAllData() {
+    private void reloadAllStocks(){
         progressDialog.show();
-        apiRepository.getApiService().getPartItemList(is_shopping, type).enqueue(new Callback<List<StockItem>>() {
+        apiRepository.getApiService().getAllPartItemList().enqueue(new Callback<List<StockItem>>() {
             @Override
             public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
-                if (response.isSuccessful() && response.body() != null){
-                    stockItemList = response.body();
-                    stockItemAdapter.updateAdapter(stockItemList);
-                    stock_recycler.setAdapter(stockItemAdapter);
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    Log("size : "+ response.body().size());
+                    QueryContract.StockQuery stockQuery = new StockQueryImplementation();
+                    stockQuery.deleteAllStocks(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("delete stocks successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("delete stocks failed");
+                        }
+                    });
+                    for (StockItem stockItem : response.body()) {
+                        stockQuery.insertStock(stockItem, new QueryResponse<StockItem>() {
+                            @Override
+                            public void onSuccess(StockItem data) {
+
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+
+                            }
+                        });
+                    }
+                    sharedPreferencesManager.setBooleanValue("part_update", false);
+                    loadStockData();
                 }
-                progressDialog.dismiss();
             }
 
             @Override
             public void onFailure(Call<List<StockItem>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+            }
+        });
+    }
+
+    private void loadStockData(){
+        stockItemList = new ArrayList<>();
+        QueryContract.StockQuery stockQuery = new StockQueryImplementation();
+        stockQuery.getStocksInParts(is_shopping, type, new QueryResponse<List<StockItem>>() {
+            @Override
+            public void onSuccess(List<StockItem> data) {
+                stockItemList = data;
+                stockItemAdapter.updateAdapter(stockItemList);
+                stock_recycler.setAdapter(stockItemAdapter);
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log("stock load Failed");
                 progressDialog.dismiss();
             }
         });
+
     }
 
     private void showEditDialog(Activity activity, StockItem stockItem) {
@@ -158,7 +211,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null){
                             showToast("Saved!");
-                            loadAllData();
+                            reloadAllStocks();
                             dialog.dismiss();
                         }
                     }
@@ -188,7 +241,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null){
                             showToast("Deleted!");
-                            loadAllData();
+                            reloadAllStocks();
                         }
                         dialog.dismiss();
                     }
@@ -253,7 +306,7 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                         if (response.isSuccessful() && response.body() != null){
                             showToast("Created!");
                         }
-                        loadAllData();
+                        reloadAllStocks();
                         dialog.dismiss();
                     }
 

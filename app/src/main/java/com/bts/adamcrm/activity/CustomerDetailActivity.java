@@ -237,7 +237,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
             @Override
             public void onFailure(Call<List<Category>> call, Throwable t) {
-
+                showToast("Please Activate internet connection!");
             }
         });
     }
@@ -465,7 +465,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
 
                         @Override
                         public void onFailure(Call<String> call, Throwable t) {
-
+                            showToast("Please Activate internet connection!");
                         }
                     });
                     invoiceList.remove(position);
@@ -952,10 +952,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             }
 
             customer.setAttached_files(new Gson().toJson(attachmentList));
-//            customer.setInvoices(invoiceList);
-//            if (invoiceList.size() > 0) {
-//                saveInvoice(invoiceList);
-//            }
 
             apiRepository.getApiService().insertCustomer(customer.getTitle(), customer.getMobile_phone(), customer.getEmail(),
                     customer.getName(), customer.getAddress(), customer.getTown(), customer.getPostal_code(), customer.getFurther_note(),
@@ -1270,7 +1266,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 showToast("Please Activate internet connection!");
-                progressDialog.show();
+                progressDialog.dismiss();
             }
         });
     }

@@ -67,8 +67,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + STOCK_PNO + " TEXT NOT NULL, "
                 + STOCK_SHOPPING + " INTEGER NOT NULL, "
                 + STOCK_TYPE + " INTEGER NOT NULL, "
-                + STOCK_CREATE + " TEXT NOT NULL, "
-                + STOCK_UPDATE + " INTEGER"
+                + STOCK_CREATE + " TEXT, "
+                + STOCK_UPDATE + "TEXT"
                 + ")";
 
         sqLiteDatabase.execSQL(CREATE_CUSTOMER_TABLE);

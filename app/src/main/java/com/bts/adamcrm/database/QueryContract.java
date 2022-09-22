@@ -36,8 +36,9 @@ public class QueryContract {
     }
 
     public interface StockQuery {
-        void insertStock(StockItem stock, QueryResponse<Boolean> response);
+        void insertStock(StockItem stock, QueryResponse<StockItem> response);
         void getAllStocks(QueryResponse<List<StockItem>> response);
+        void getStocksInParts(int is_shopping, int type, QueryResponse<List<StockItem>> response);
         void getStockById(int stockId, QueryResponse<StockItem> response);
         void updateStockInfo(StockItem stock, QueryResponse<Boolean> response);
         void deleteStockById(int StockId, QueryResponse<Boolean> response);

@@ -49,12 +49,15 @@ import com.bts.adamcrm.database.CategoryQueryImplementation;
 import com.bts.adamcrm.database.CustomerQueryImplementation;
 import com.bts.adamcrm.database.QueryContract;
 import com.bts.adamcrm.database.QueryResponse;
+import com.bts.adamcrm.database.StockQueryImplementation;
 import com.bts.adamcrm.helper.OnStartDragListener;
 import com.bts.adamcrm.helper.SimpleItemTouchHelperCallback;
 import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
+import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.Nav;
+import com.bts.adamcrm.model.StockItem;
 import com.bts.adamcrm.receiver.AlarmReceiver;
 import com.bts.adamcrm.util.FileUtils;
 import com.bts.adamcrm.util.ImageFileFilter;
@@ -190,6 +193,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         reloadAllCategories();
         reloadAllData();
         reloadAllAttachments();
+        reloadAllStocks();
     }
 
     private void loadAll(){
@@ -449,6 +453,94 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         setupCategorySpinner(categoryList);
     }
 
+    private void reloadAllStocks(){
+        apiRepository.getApiService().getAllPartItemList().enqueue(new Callback<List<StockItem>>() {
+            @Override
+            public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    Log("size : "+ response.body().size());
+                    QueryContract.StockQuery stockQuery = new StockQueryImplementation();
+                    stockQuery.deleteAllStocks(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("delete stocks successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("delete stocks failed");
+                        }
+                    });
+                    for (StockItem stockItem : response.body()) {
+                        stockQuery.insertStock(stockItem, new QueryResponse<StockItem>() {
+                            @Override
+                            public void onSuccess(StockItem data) {
+                                Log("StockItem added");
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+
+                            }
+                        });
+                    }
+                    sharedPreferencesManager.setBooleanValue("part_update", false);
+                    progressDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<StockItem>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+            }
+        });
+    }
+
+    private void reloadAllInvoices(){
+        apiRepository.getApiService().getAllInvoiceList().enqueue(new Callback<List<Invoice>>() {
+            @Override
+            public void onResponse(Call<List<Invoice>> call, Response<List<Invoice>> response) {
+                Log(response.raw().toString());
+                if (response.body() != null) {
+                    Log("size : "+ response.body().size());
+                    QueryContract.StockQuery stockQuery = new StockQueryImplementation();
+                    stockQuery.deleteAllStocks(new QueryResponse<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean data) {
+                            Log("delete stocks successfully");
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            Log("delete stocks failed");
+                        }
+                    });
+                    for (StockItem stockItem : response.body()) {
+                        stockQuery.insertStock(stockItem, new QueryResponse<StockItem>() {
+                            @Override
+                            public void onSuccess(StockItem data) {
+                                Log("StockItem added");
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+
+                            }
+                        });
+                    }
+                    sharedPreferencesManager.setBooleanValue("part_update", false);
+                    progressDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Invoice>> call, Throwable t) {
+                showToast("Please Activate internet connection!");
+            }
+        });
+    }
+
     public void setupCategorySpinner(List<Category> list) {
         taskTypes = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
@@ -556,12 +648,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     btn_reminder.setVisibility(View.VISIBLE);
                 }
                 showCustomerData();
-                progressDialog.dismiss();
+
             }
 
             @Override
             public void onFailure(String message) {
-                progressDialog.dismiss();
+
             }
         });
     }
