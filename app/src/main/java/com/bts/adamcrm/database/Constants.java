@@ -52,7 +52,7 @@ public class Constants {
     public static final String INVOICE_EMAIL = "email";
     public static final String INVOICE_DATE = "invoice_date";
     public static final String INVOICE_MOBILE = "mobile_num";
-    public static final String INVOICE_TO_ADDR = "to";
+    public static final String INVOICE_TO_ADDR = "to_address";
     public static final String INVOICE_FROM_ADDR = "from_address";
     public static final String INVOICE_ITEMS = "items";
     public static final String INVOICE_EXCLUDING_VAT = "excluding_vat";

@@ -191,11 +191,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void reloadAll(){
+        loadingProgress.show();
         reloadAllCategories();
-        reloadAllData();
+        reloadAllCustomerData();
         reloadAllAttachments();
         reloadAllInvoices();
         reloadAllStocks();
+//        loadingProgress.dismiss();
     }
 
     private void loadAll(){
@@ -217,12 +219,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        loadingProgress = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
-        loadingProgress.setTitle(R.string.sync_data);
         progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
         progressDialog.setTitle(R.string.load_data);
         sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
 //        sharedPreferencesManager.setBooleanValue("update", true);
+        loadingProgress = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
+        loadingProgress.setTitle(R.string.sync_data);
 
         Intent intent = new Intent();
         String pkgName = getPackageName();
@@ -457,7 +459,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void reloadAllStocks(){
-        loadingProgress.show();
         apiRepository.getApiService().getAllPartItemList().enqueue(new Callback<List<StockItem>>() {
             @Override
             public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
@@ -480,7 +481,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         stockQuery.insertStock(stockItem, new QueryResponse<StockItem>() {
                             @Override
                             public void onSuccess(StockItem data) {
-                                Log("StockItem added");
                             }
 
                             @Override
@@ -496,8 +496,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
             @Override
             public void onFailure(Call<List<StockItem>> call, Throwable t) {
-                loadingProgress.dismiss();
                 showToast("Please Activate internet connection!");
+                loadingProgress.dismiss();
             }
         });
     }
@@ -660,8 +660,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         });
     }
 
-    private void reloadAllData(){
-        loadingProgress.show();
+    private void reloadAllCustomerData(){
         apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
             @Override
             public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
@@ -683,7 +682,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     for (Customer customer : response.body()) {
                         customerQuery.insertCustomer(customer, new QueryResponse<Customer>() {
                             @Override
-                            public void onSuccess(Customer data) {}
+                            public void onSuccess(Customer data) {
+                            }
 
                             @Override
                             public void onFailure(String message) {
@@ -693,13 +693,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     }
                     Log("customer table reloaded");
                     loadAllData();
-                    loadingProgress.dismiss();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Customer>> call, Throwable t) {
-                loadingProgress.dismiss();
                 showToast("Please Activate internet connection!");
             }
         });

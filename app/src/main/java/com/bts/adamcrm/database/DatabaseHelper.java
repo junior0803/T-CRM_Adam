@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
         String CREATE_CUSTOMER_TABLE = "CREATE TABLE " + TABLE_CUSTOMER + "("
-                + CUSTOMER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + CUSTOMER_ID + " INTEGER PRIMARY KEY, "
                 + CUSTOMER_TITLE + " TEXT NOT NULL, "
                 + CUSTOMER_PHONE + " TEXT, "
                 + CUSTOMER_EMAIL + " TEXT, " //nullable
@@ -76,19 +76,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + INVOICE_NO + " TEXT NOT NULL, "
                 + INVOICE_EMAIL + " TEXT, "
                 + INVOICE_DATE + " TEXT, "
-                + INVOICE_MOBILE + "TEXT, "
-                + INVOICE_TO_ADDR + "TEXT, "
+                + INVOICE_MOBILE + " TEXT, "
+                + INVOICE_TO_ADDR + " TEXT, "
                 + INVOICE_FROM_ADDR + " TEXT, "
                 + INVOICE_ITEMS + " TEXT, "
-                + INVOICE_EXCLUDING_VAT + "TEXT, "
-                + INVOICE_VAT_AMOUNT + "TEXT, "
-                + INVOICE_TOTAL + "TEXT, "
-                + INVOICE_PAYED + "TEXT, "
-                + INVOICE_DUE + "TEXT, "
-                + INVOICE_COMMENT + "TEXT, "
-                + INVOICE_CUSTOMER_ID + "INTEGER, "
-                + INVOICE_PRESET1 + "TEXT, "
-                + INVOICE_PRESET2 + "TEXT"
+                + INVOICE_EXCLUDING_VAT + " TEXT, "
+                + INVOICE_VAT_AMOUNT + " TEXT, "
+                + INVOICE_TOTAL + " TEXT, "
+                + INVOICE_PAYED + " TEXT, "
+                + INVOICE_DUE + " TEXT, "
+                + INVOICE_COMMENT + " TEXT, "
+                + INVOICE_CUSTOMER_ID + " INTEGER NOT NULL, "
+                + INVOICE_PRESET1 + " TEXT, "
+                + INVOICE_PRESET2 + " TEXT"
                 + ")";
 
         sqLiteDatabase.execSQL(CREATE_CUSTOMER_TABLE);

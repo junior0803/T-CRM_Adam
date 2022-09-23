@@ -70,8 +70,8 @@ public class InvoiceQueryImplementation implements QueryContract.InvoiceQuery{
 
         Cursor cursor = null;
         try {
-            cursor = sqLiteDatabase.query(TABLE_CUSTOMER, null,
-                    Constants.INVOICE_CUSTOMER_ID+ " = ? ", new String[]{String.valueOf(customerId)},
+            cursor = sqLiteDatabase.query(TABLE_INVOICE, null,
+                    Constants.INVOICE_CUSTOMER_ID+ "=?", new String[]{String.valueOf(customerId)},
                     null, null, null);
             if(cursor != null && cursor.moveToFirst()){
                 List<Invoice> invoiceList = new ArrayList<>();

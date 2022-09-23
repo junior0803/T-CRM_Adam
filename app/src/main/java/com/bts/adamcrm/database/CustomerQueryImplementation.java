@@ -164,6 +164,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
     private ContentValues getContentValuesForCustomer(Customer customer){
         ContentValues contentValues = new ContentValues();
 
+        contentValues.put(Constants.CUSTOMER_ID, customer.getId());
         contentValues.put(Constants.CUSTOMER_TITLE, customer.getTitle());
         contentValues.put(Constants.CUSTOMER_PHONE, customer.getMobile_phone());
         contentValues.put(Constants.CUSTOMER_EMAIL, customer.getEmail());
@@ -184,6 +185,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
     }
 
     private Customer getCustomerFromCursor(Cursor cursor){
+        int id = cursor.getInt(cursor.getColumnIndex(CUSTOMER_ID));
         String title = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_TITLE));
         String mobile_phone = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_PHONE));
         String email = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_EMAIL));
@@ -200,7 +202,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
         String created_at = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_CREATE));
         String updated_at = cursor.getString(cursor.getColumnIndex(Constants.CUSTOMER_UPDATE));
 
-        return new Customer(title, mobile_phone, email, name, address, town, postal_code,
+        return new Customer(id, title, mobile_phone, email, name, address, town, postal_code,
                 further_note, state, remind_date, category_id, sms_sent, attached_files, created_at, updated_at);
     }
 }

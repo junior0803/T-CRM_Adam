@@ -1,5 +1,7 @@
 package com.bts.adamcrm.activity;
 
+import static com.bts.adamcrm.MyApplication.mConnManager;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -12,7 +14,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -61,7 +63,6 @@ import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -293,7 +294,6 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         setContentView(R.layout.activity_customer_detail);
         ButterKnife.bind(this);
         setupStateSpinner();
-        setupCategory();
         getCurrentDate();
         recycler_invoices.setVisibility(View.GONE);
         txt_no_invoice.setVisibility(View.VISIBLE);
@@ -342,6 +342,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     if (strings.length > 0 && !strings[0].equals(""))
                         Collections.addAll(attachmentList, strings);
                 }
+                setupCategory();
                 setupInvoice(customer.getId());
             }
         }
@@ -583,7 +584,13 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 } else if (spn_state.getSelectedItemPosition() == 0){
                     showToast("Please Select a proper state!");
                 } else {
-                    saveCustomer(this, true);
+                    NetworkInfo nInfo = mConnManager.getActiveNetworkInfo();
+                    boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+                    if (connected) {
+                        saveCustomer(this, true);
+                    } else {
+                        showToast("Please Activate internet connection!");
+                    }
                 }
                 break;
             case R.id.btn_send_email:
@@ -1152,7 +1159,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.setContentView(R.layout.dialog_category);
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler_category);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_category);
-        //categoryList = new ArrayList<>();
+        categoryList = new ArrayList<>();
         CategoryAdapter2 categoryAdapter2 = new CategoryAdapter2(categoryList);
         recyclerView.setAdapter(categoryAdapter2);
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
@@ -1234,6 +1241,12 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void uploadFile(File file) {
+        NetworkInfo nInfo = mConnManager.getActiveNetworkInfo();
+        boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+        if (!connected) {
+            showToast("Please Activate internet connection!");
+            return;
+        }
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Uploading...");
         progressDialog.show();

@@ -1,9 +1,12 @@
 package com.bts.adamcrm.activity;
 
+import static com.bts.adamcrm.MyApplication.mConnManager;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -205,6 +208,13 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Network Status check
+                NetworkInfo nInfo = mConnManager.getActiveNetworkInfo();
+                boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+                if (!connected) {
+                    showToast("Please Activate internet connection!");
+                    return;
+                }
                 apiRepository.getApiService().updatePart(stockItem.getId(), edtQuantity.getText().toString(), edtMinQuantity.getText().toString()
                         , edtDescription.getText().toString(), edtPno.getText().toString(), type, is_shopping).enqueue(new Callback<ResponseBody>() {
                     @Override
@@ -235,7 +245,12 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         ((TextView) dialog.findViewById(R.id.btn_accept)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                NetworkInfo nInfo = mConnManager.getActiveNetworkInfo();
+                boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+                if (!connected) {
+                    showToast("Please Activate internet connection!");
+                    return;
+                }
                 apiRepository.getApiService().deletePart(stockItem.getId()).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -299,6 +314,13 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
                 s.setMinimum_quantity(editMinQuantity.getText().toString());
                 s.setType(type);
                 s.setIs_shopping(is_shopping);
+                // network status check
+                NetworkInfo nInfo = mConnManager.getActiveNetworkInfo();
+                boolean connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+                if (!connected) {
+                    showToast("Please Activate internet connection!");
+                    return;
+                }
                 apiRepository.getApiService().createPart(s.getQuantity(), s.getMinimum_quantity(), s.getDescription(),
                          s.getPno(), s.getType(), s.getIs_shopping()).enqueue(new Callback<ResponseBody>() {
                     @Override
