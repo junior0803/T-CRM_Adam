@@ -566,7 +566,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 showSelectorDialog(this);
                 break;
             case R.id.btn_back:
-                exit();
+                clickBackDialog();
                 break;
             case R.id.btn_category:
                 showCategoryDialog(this);

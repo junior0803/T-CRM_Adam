@@ -260,7 +260,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
                 addInvoiceItemDialog(this);
                 break;
             case R.id.btn_back:
-                exit();
+                clickBackDialog();
                 break;
             case R.id.btn_create_pdf:
                 createPdf();
