@@ -47,6 +47,7 @@ import com.bts.adamcrm.adapter.StatusAdapter;
 import com.bts.adamcrm.database.AttachmentQueryImplementation;
 import com.bts.adamcrm.database.CategoryQueryImplementation;
 import com.bts.adamcrm.database.CustomerQueryImplementation;
+import com.bts.adamcrm.database.InvoiceQueryImplementation;
 import com.bts.adamcrm.database.QueryContract;
 import com.bts.adamcrm.database.QueryResponse;
 import com.bts.adamcrm.database.StockQueryImplementation;
@@ -193,6 +194,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         reloadAllCategories();
         reloadAllData();
         reloadAllAttachments();
+        reloadAllInvoices();
         reloadAllStocks();
     }
 
@@ -215,7 +217,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        loadingProgress = new ProgressDialog(this);
+        loadingProgress = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
+        loadingProgress.setTitle(R.string.sync_data);
+        progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
+        progressDialog.setTitle(R.string.load_data);
         sharedPreferencesManager = SharedPreferencesManager.getInstance(getBaseContext());
 //        sharedPreferencesManager.setBooleanValue("update", true);
 
@@ -312,7 +317,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     Date date = new Date();
-                    if (customerList.get(i).getDate_updated() != null)
+                    if (customerList.get(i).getDate_updated() != null && !customerList.get(i).getDate_updated().equals(""))
                         date = dateFormat.parse(customerList.get(i).getDate_updated());
                     else
                         date = dateFormat.parse(customerList.get(i).getDate_created());
@@ -359,8 +364,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void loadUi(){
-        progressDialog = new ProgressDialog(this, R.style.RedAppCompatAlertDialogStyle);
-        progressDialog.setTitle(R.string.load_data);
         customerAdapter = new CustomerAdapter(visibleList);
         tasks_recycler.setAdapter(customerAdapter);
         tasks_recycler.addOnItemTouchListener(new RecyclerItemClickListener(MainActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
@@ -454,6 +457,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void reloadAllStocks(){
+        loadingProgress.show();
         apiRepository.getApiService().getAllPartItemList().enqueue(new Callback<List<StockItem>>() {
             @Override
             public void onResponse(Call<List<StockItem>> call, Response<List<StockItem>> response) {
@@ -486,12 +490,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         });
                     }
                     sharedPreferencesManager.setBooleanValue("part_update", false);
-                    progressDialog.dismiss();
+                    loadingProgress.dismiss();
                 }
             }
 
             @Override
             public void onFailure(Call<List<StockItem>> call, Throwable t) {
+                loadingProgress.dismiss();
                 showToast("Please Activate internet connection!");
             }
         });
@@ -504,8 +509,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 Log(response.raw().toString());
                 if (response.body() != null) {
                     Log("size : "+ response.body().size());
-                    QueryContract.StockQuery stockQuery = new StockQueryImplementation();
-                    stockQuery.deleteAllStocks(new QueryResponse<Boolean>() {
+                    QueryContract.InvoiceQuery invoiceQuery = new InvoiceQueryImplementation();
+                    invoiceQuery.deleteAllInvoices(new QueryResponse<Boolean>() {
                         @Override
                         public void onSuccess(Boolean data) {
                             Log("delete stocks successfully");
@@ -516,11 +521,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             Log("delete stocks failed");
                         }
                     });
-                    for (StockItem stockItem : response.body()) {
-                        stockQuery.insertStock(stockItem, new QueryResponse<StockItem>() {
+                    for (Invoice invoice : response.body()) {
+                        invoiceQuery.insertInvoice(invoice, new QueryResponse<Invoice>() {
                             @Override
-                            public void onSuccess(StockItem data) {
-                                Log("StockItem added");
+                            public void onSuccess(Invoice data) {
+
                             }
 
                             @Override
@@ -529,8 +534,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             }
                         });
                     }
-                    sharedPreferencesManager.setBooleanValue("part_update", false);
-                    progressDialog.dismiss();
                 }
             }
 
@@ -648,7 +651,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     btn_reminder.setVisibility(View.VISIBLE);
                 }
                 showCustomerData();
-
             }
 
             @Override
@@ -659,7 +661,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void reloadAllData(){
-        progressDialog.show();
+        loadingProgress.show();
         apiRepository.getApiService().getAllCustomerList().enqueue(new Callback<List<Customer>>() {
             @Override
             public void onResponse(Call<List<Customer>> call, Response<List<Customer>> response) {
@@ -691,12 +693,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     }
                     Log("customer table reloaded");
                     loadAllData();
+                    loadingProgress.dismiss();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Customer>> call, Throwable t) {
-                progressDialog.dismiss();
+                loadingProgress.dismiss();
                 showToast("Please Activate internet connection!");
             }
         });

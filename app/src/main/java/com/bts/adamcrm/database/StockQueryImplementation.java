@@ -55,7 +55,7 @@ public class StockQueryImplementation implements QueryContract.StockQuery{
                 }   while (cursor.moveToNext());
                 response.onSuccess(StockList);
             } else {
-                response.onFailure("There are no student in database");
+                response.onFailure("There are no stock in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -82,7 +82,7 @@ public class StockQueryImplementation implements QueryContract.StockQuery{
                 }   while (cursor.moveToNext());
                 response.onSuccess(StockList);
             } else {
-                response.onFailure("There are no student in database");
+                response.onFailure("There are no stock in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());

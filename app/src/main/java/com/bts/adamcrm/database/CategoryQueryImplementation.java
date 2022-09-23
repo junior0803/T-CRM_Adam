@@ -55,7 +55,7 @@ public class CategoryQueryImplementation implements QueryContract.CategoryQuery{
                 }   while (cursor.moveToNext());
                 response.onSuccess(CategoryList);
             } else {
-                response.onFailure("There are no student in database");
+                response.onFailure("There are no category in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -82,7 +82,7 @@ public class CategoryQueryImplementation implements QueryContract.CategoryQuery{
                 category = getCategoryFromCursor(cursor);
                 response.onSuccess(category);
             } else {
-                response.onFailure("Student not found with this ID in database");
+                response.onFailure("Category not found with this ID in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -150,7 +150,7 @@ public class CategoryQueryImplementation implements QueryContract.CategoryQuery{
             if(count==0) {
                 response.onSuccess(true);
             } else
-                response.onFailure("Failed to delete all categorys. Unknown reason");
+                response.onFailure("Failed to delete all categories. Unknown reason");
         } catch (SQLiteException e){
             response.onFailure(e.getMessage());
         } finally {

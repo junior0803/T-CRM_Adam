@@ -3,6 +3,7 @@ package com.bts.adamcrm.database;
 import com.bts.adamcrm.model.Attachment;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
+import com.bts.adamcrm.model.Invoice;
 import com.bts.adamcrm.model.StockItem;
 
 import java.util.List;
@@ -43,5 +44,14 @@ public class QueryContract {
         void updateStockInfo(StockItem stock, QueryResponse<Boolean> response);
         void deleteStockById(int StockId, QueryResponse<Boolean> response);
         void deleteAllStocks(QueryResponse<Boolean> response);
+    }
+
+    public interface InvoiceQuery {
+        void insertInvoice(Invoice invoice, QueryResponse<Invoice> response);
+        void getAllInvoices(QueryResponse<List<Invoice>> response);
+        void getInvoiceById(int customerId, QueryResponse<List<Invoice>> response);
+        void updateInvoiceInfo(Invoice invoice, QueryResponse<Boolean> response);
+        void deleteInvoiceById(int id, QueryResponse<Boolean> response);
+        void deleteAllInvoices(QueryResponse<Boolean> response);
     }
 }

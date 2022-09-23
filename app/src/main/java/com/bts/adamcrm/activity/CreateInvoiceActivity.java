@@ -382,7 +382,7 @@ public class CreateInvoiceActivity extends BaseActivity implements View.OnClickL
         if (logoFile2 == null){
             invoice.setLogo2("");
         }
-        invoice.setCustomer_id(String.valueOf(0));
+        invoice.setCustomer_id(0);
         invoice.setExclude_vat(edt_exclude_vat.getText().toString());
         invoice.setVat_amount(edt_vat_amount.getText().toString());
         invoice.setDue_total(edt_due_total.getText().toString());

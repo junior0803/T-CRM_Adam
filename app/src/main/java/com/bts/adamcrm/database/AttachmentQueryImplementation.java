@@ -56,7 +56,7 @@ public class AttachmentQueryImplementation implements QueryContract.AttachmentQu
                 }   while (cursor.moveToNext());
                 response.onSuccess(AttachmentList);
             } else {
-                response.onFailure("There are no student in database");
+                response.onFailure("There are no attachment in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -83,7 +83,7 @@ public class AttachmentQueryImplementation implements QueryContract.AttachmentQu
                 attachment = getAttachmentFromCursor(cursor);
                 response.onSuccess(attachment);
             } else {
-                response.onFailure("Student not found with this ID in database");
+                response.onFailure("Attachment not found with this ID in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());

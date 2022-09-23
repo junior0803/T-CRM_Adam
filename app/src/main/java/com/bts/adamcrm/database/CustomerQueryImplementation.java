@@ -59,7 +59,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
                 }   while (cursor.moveToNext());
                 response.onSuccess(CustomerList);
             } else {
-                response.onFailure("There are no student in database");
+                response.onFailure("There are no customer in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -86,7 +86,7 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
                 customer = getCustomerFromCursor(cursor);
                 response.onSuccess(customer);
             } else {
-                response.onFailure("Student not found with this ID in database");
+                response.onFailure("Customer not found with this ID in database");
             }
         } catch (Exception e){
             response.onFailure(e.getMessage());
@@ -104,7 +104,6 @@ public class CustomerQueryImplementation implements QueryContract.CustomerQuery{
         SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
 
         ContentValues contentValues = getContentValuesForCustomer(customer);
-
 
         try {
             rowCount = sqLiteDatabase.update(TABLE_CUSTOMER, contentValues,

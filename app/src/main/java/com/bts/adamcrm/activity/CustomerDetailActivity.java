@@ -43,6 +43,10 @@ import com.bts.adamcrm.adapter.AttachmentAdapter;
 import com.bts.adamcrm.adapter.CategoryAdapter2;
 import com.bts.adamcrm.adapter.InvoiceAdapter;
 import com.bts.adamcrm.adapter.InvoiceAdapter2;
+import com.bts.adamcrm.database.CategoryQueryImplementation;
+import com.bts.adamcrm.database.InvoiceQueryImplementation;
+import com.bts.adamcrm.database.QueryContract;
+import com.bts.adamcrm.database.QueryResponse;
 import com.bts.adamcrm.model.Category;
 import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.Invoice;
@@ -132,7 +136,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     String fileName;
     String currentPhotoPath;
 
-    ArrayList<Invoice> invoiceList = new ArrayList();
+    List<Invoice> invoiceList = new ArrayList();
     InvoiceAdapter invoiceAdapter = new InvoiceAdapter(invoiceList);
     ArrayList<String> attachmentList = new ArrayList<>();
     private int mDay;
@@ -216,49 +220,46 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void setupCategory(){
-        apiRepository.getApiService().categoryList().enqueue(new Callback<List<Category>>() {
+        QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
+        categoryQuery.getAllCategories(new QueryResponse<List<Category>>() {
             @Override
-            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
-                Log(response.raw().toString());
-                if (response.body() != null) {
-                    categoryList = response.body();
-                    Log("setupCategory size : "+ response.body().size());
-                    if (customer != null) {
-                        Log("selected_category : " + customer.getName() + " ID : " + customer.getCategory_id());
-                        for (Category category : categoryList){
-                            if (category.getId() == customer.getCategory_id()){
-                                selected_category = category;
-                                btn_category.setText("Select Category : " + selected_category.getName());
-                            }
+            public void onSuccess(List<Category> data) {
+                categoryList = data;
+                Log("setupCategory size : "+ data.size());
+                if (customer != null) {
+                    Log("selected_category : " + customer.getName() + " ID : " + customer.getCategory_id());
+                    for (Category category : categoryList){
+                        if (category.getId() == customer.getCategory_id()){
+                            selected_category = category;
+                            btn_category.setText("Select Category : " + selected_category.getName());
                         }
                     }
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Category>> call, Throwable t) {
-                showToast("Please Activate internet connection!");
+            public void onFailure(String message) {
+                Log("Category load Failed. message : " + message);
             }
         });
     }
 
     private void setupInvoice(int id) {
-        apiRepository.getApiService().getInvoiceList(id).enqueue(new Callback<List<Invoice>>() {
+        QueryContract.InvoiceQuery invoiceQuery = new InvoiceQueryImplementation();
+        invoiceQuery.getInvoiceById(id, new QueryResponse<List<Invoice>>() {
             @Override
-            public void onResponse(Call<List<Invoice>> call, Response<List<Invoice>> response) {
-                if (response.isSuccessful() && response.body() != null){
-                    invoiceList = new ArrayList<>(response.body());
-                    if (invoiceList.size() == 0){
-                        recycler_invoices.setVisibility(View.GONE);
-                        txt_no_invoice.setVisibility(View.VISIBLE);
-                    } else {
-                        txt_no_invoice.setVisibility(View.GONE);
-                        recycler_invoices.setVisibility(View.VISIBLE);
-                        initInvoice = invoiceList.size();
-                    }
-                    invoiceAdapter.updateAdapter(invoiceList);
-                    recycler_invoices.setAdapter(invoiceAdapter);
+            public void onSuccess(List<Invoice> data) {
+                invoiceList = data;
+                if (invoiceList.size() == 0){
+                    recycler_invoices.setVisibility(View.GONE);
+                    txt_no_invoice.setVisibility(View.VISIBLE);
+                } else {
+                    txt_no_invoice.setVisibility(View.GONE);
+                    recycler_invoices.setVisibility(View.VISIBLE);
+                    initInvoice = invoiceList.size();
                 }
+                invoiceAdapter.updateAdapter(invoiceList);
+                recycler_invoices.setAdapter(invoiceAdapter);
                 recycler_invoices.addOnItemTouchListener(new RecyclerItemClickListener(CustomerDetailActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
@@ -279,8 +280,8 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
             }
 
             @Override
-            public void onFailure(Call<List<Invoice>> call, Throwable t) {
-                showToast("Please Activate internet connection!");
+            public void onFailure(String message) {
+                Log("Invoice load Failed. message : " + message);
             }
         });
     }
@@ -1025,7 +1026,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private void saveInvoice(ArrayList<Invoice> invoiceList) {
+    private void saveInvoice(List<Invoice> invoiceList) {
         for (int i = 0; i < invoiceList.size(); i ++){
             Invoice invoice = invoiceList.get(i);
             Log("initInvoice : " + initInvoice + " customerID : " + customerID);
@@ -1042,7 +1043,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                     invoice.getInvoice_no(), invoice.getEmail(), invoice.getInvoice_date(), invoice.getMobile_num() ,
                     invoice.getTo(), invoice.getFrom_address(), invoice.getItems(), invoice.getExclude_vat(), invoice.getVat_amount(),
                     invoice.getInvoice_total(), invoice.getPayed_amount(), invoice.getDue_total(), invoice.getComment(),
-                    String.valueOf(customerID), invoice.getLogo1(), invoice.getLogo2(), id, mode
+                    customerID, invoice.getLogo1(), invoice.getLogo2(), id, mode
             ).enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

@@ -45,10 +45,23 @@ public class Constants {
     public static final String STOCK_CREATE = "created_at";
     public static final String STOCK_UPDATE = "updated_at";
 
-    //others for general purpose key-value pair data
-    public static final String TITLE = "title";
-    public static final String CREATE_STUDENT = "create_student";
-    public static final String UPDATE_STUDENT = "update_student";
-    public static final String CREATE_SUBJECT = "create_subject";
-    public static final String UPDATE_SUBJECT = "update_subject";
+    // column name of Invoice table
+    public static final String TABLE_INVOICE = "invoice";
+    public static final String INVOICE_ID = "id";
+    public static final String INVOICE_NO = "invoice_no";
+    public static final String INVOICE_EMAIL = "email";
+    public static final String INVOICE_DATE = "invoice_date";
+    public static final String INVOICE_MOBILE = "mobile_num";
+    public static final String INVOICE_TO_ADDR = "to";
+    public static final String INVOICE_FROM_ADDR = "from_address";
+    public static final String INVOICE_ITEMS = "items";
+    public static final String INVOICE_EXCLUDING_VAT = "excluding_vat";
+    public static final String INVOICE_VAT_AMOUNT = "vat_amount";
+    public static final String INVOICE_TOTAL = "invoice_total";
+    public static final String INVOICE_PAYED = "payed_amount";
+    public static final String INVOICE_DUE = "due_total";
+    public static final String INVOICE_COMMENT = "comment";
+    public static final String INVOICE_CUSTOMER_ID = "customer_id";
+    public static final String INVOICE_PRESET1 = "preset1";
+    public static final String INVOICE_PRESET2 = "preset2";
 }

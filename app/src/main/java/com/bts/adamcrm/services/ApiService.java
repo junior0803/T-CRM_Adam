@@ -72,13 +72,13 @@ public interface ApiService {
     Call <List<StockItem>> getPartItemList(@Path("is_shop") int is_shop, @Path("type") int type);
 
     // Customer
-    @POST("customerList")
+    @GET("customerList")
     Call <List<Customer>> getAllCustomerList();
 
-    @FormUrlEncoded
-    @POST("customerList")
-    Call <List<Customer>> getCustomerList(@Field("title") String title, @Field("state") int state, @Field("category") int category
-            , @Field("date_from") String date_from, @Field("date_to") String date_to);
+//    @FormUrlEncoded
+//    @POST("customerList")
+//    Call <List<Customer>> getCustomerList(@Field("title") String title, @Field("state") int state, @Field("category") int category
+//            , @Field("date_from") String date_from, @Field("date_to") String date_to);
 
     @FormUrlEncoded
     @POST("insertCustomer")
@@ -120,7 +120,7 @@ public interface ApiService {
                                        @Field("data[mobile_num]") String mobile, @Field("data[to]") String to, @Field("data[from_address]") String address,
                                        @Field("data[items]") String items, @Field("data[excluding_vat]") String exclude_vat, @Field("data[vat_amount]") String amount,
                                        @Field("data[invoice_total]") String total, @Field("data[payed_amount]") String payed, @Field("data[due_total]") String due_total,
-                                       @Field("data[comment]") String comment, @Field("data[customer_id]") String customer_id,
+                                       @Field("data[comment]") String comment, @Field("data[customer_id]") int customer_id,
                                        @Field("data[preset1]") String preset1, @Field("data[preset2]") String preset2,
                                        @Field("id") int id, @Field("mode") String mode);
 

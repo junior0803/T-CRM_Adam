@@ -54,7 +54,7 @@ public class Invoice {
     public String comment;
     @SerializedName("customer_id")
     @Expose
-    public String customer_id;
+    public int customer_id;
     @SerializedName("preset1")
     @Expose
     public String preset1;
@@ -71,11 +71,10 @@ public class Invoice {
     public Invoice(){
     }
 
-    public Invoice(int id, String invoice_no, String email, String invoice_date, String mobile_num,
+    public Invoice(String invoice_no, String email, String invoice_date, String mobile_num,
                    String to, String from_address, String items, String exclude_vat, String vat_amount,
-                   String invoice_total, String payed_amount, String due_total, String comment, String customer_id,
-                   String logo1, String logo2, String created_at, String updated_at) {
-        this.id = id;
+                   String invoice_total, String payed_amount, String due_total, String comment,
+                   int customer_id, String logo1, String logo2) {
         this.invoice_no = invoice_no;
         this.email = email;
         this.invoice_date = invoice_date;
@@ -92,8 +91,6 @@ public class Invoice {
         this.customer_id = customer_id;
         this.preset1 = logo1;
         this.preset2 = logo2;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
     }
 
     public int getId() {
@@ -209,11 +206,11 @@ public class Invoice {
         this.comment = comment;
     }
 
-    public String getCustomer_id() {
+    public int getCustomer_id() {
         return customer_id;
     }
 
-    public void setCustomer_id(String customer_id) {
+    public void setCustomer_id(int customer_id) {
         this.customer_id = customer_id;
     }
 
