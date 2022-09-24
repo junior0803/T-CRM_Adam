@@ -157,7 +157,7 @@ public class InvoiceQueryImplementation implements QueryContract.InvoiceQuery{
 
     private ContentValues getContentValuesForInvoice(Invoice invoice){
         ContentValues contentValues = new ContentValues();
-
+        contentValues.put(Constants.INVOICE_ID, invoice.getId());
         contentValues.put(Constants.INVOICE_NO, invoice.getInvoice_no());
         contentValues.put(Constants.INVOICE_EMAIL, invoice.getEmail());
         contentValues.put(Constants.INVOICE_DATE, invoice.getInvoice_date());
@@ -179,6 +179,7 @@ public class InvoiceQueryImplementation implements QueryContract.InvoiceQuery{
     }
 
     private Invoice getInvoiceFromInvoice(Cursor cursor){
+        int id = cursor.getInt(cursor.getColumnIndex(Constants.INVOICE_ID));
         String invoice_no = cursor.getString(cursor.getColumnIndex(Constants.INVOICE_NO));
         String email = cursor.getString(cursor.getColumnIndex(Constants.INVOICE_EMAIL));
         String invoice_date = cursor.getString(cursor.getColumnIndex(Constants.INVOICE_DATE));
@@ -196,7 +197,7 @@ public class InvoiceQueryImplementation implements QueryContract.InvoiceQuery{
         String preset1 = cursor.getString(cursor.getColumnIndex(Constants.INVOICE_PRESET1));
         String preset2 = cursor.getString(cursor.getColumnIndex(Constants.INVOICE_PRESET2));
 
-        return new Invoice(invoice_no, email, invoice_date, mobile_num, to_addr, from_addr, items,
+        return new Invoice(id, invoice_no, email, invoice_date, mobile_num, to_addr, from_addr, items,
                 exclude_vat, vat_amount, invoice_total, payed_amount, due_total, comment,
                 customer_id, preset1, preset2);
     }

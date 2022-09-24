@@ -60,7 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ")";
 
         String CREATE_STOCK_TABLE = "CREATE TABLE " + TABLE_STOCK + "("
-                + STOCK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + STOCK_ID + " INTEGER PRIMARY KEY, "
                 + STOCK_QUANTITY + " TEXT NOT NULL, "
                 + STOCK_MINIMUM + " TEXT NOT NULL, "
                 + STOCK_DESCRIPTION + " TEXT NOT NULL, "
