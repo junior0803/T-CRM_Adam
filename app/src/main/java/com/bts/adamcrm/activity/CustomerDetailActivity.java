@@ -221,6 +221,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
     }
 
     private void setupCategory(){
+        categoryList = new ArrayList<>();
         QueryContract.CategoryQuery categoryQuery = new CategoryQueryImplementation();
         categoryQuery.getAllCategories(new QueryResponse<List<Category>>() {
             @Override
@@ -346,6 +347,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
                 setupInvoice(customer.getId());
             }
         }
+        setupCategory();
         attachmentAdapter  = new AttachmentAdapter(attachmentList);
         recycler_attachments.setAdapter(attachmentAdapter);
 
@@ -1159,7 +1161,7 @@ public class CustomerDetailActivity extends BaseActivity implements View.OnClick
         dialog.setContentView(R.layout.dialog_category);
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler_category);
         ((TextView) dialog.findViewById(R.id.dialog_title)).setText(R.string.select_category);
-        categoryList = new ArrayList<>();
+//        categoryList = new ArrayList<>();
         CategoryAdapter2 categoryAdapter2 = new CategoryAdapter2(categoryList);
         recyclerView.setAdapter(categoryAdapter2);
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), new RecyclerItemClickListener.OnItemClickListener() {
