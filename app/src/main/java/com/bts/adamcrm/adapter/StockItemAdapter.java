@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bts.adamcrm.R;
+import com.bts.adamcrm.model.Customer;
 import com.bts.adamcrm.model.StockItem;
 
 import java.util.ArrayList;
@@ -80,6 +81,10 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.View
         this.StockList = list;
         this.filteredData = list;
         notifyDataSetChanged();
+    }
+
+    public List<StockItem> getStockItemList() {
+        return filteredData;
     }
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter

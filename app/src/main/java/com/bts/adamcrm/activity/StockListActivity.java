@@ -81,7 +81,13 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
         progressDialog.setTitle(R.string.load_data);
         stockItemAdapter = new StockItemAdapter(stockItemList);
         stock_recycler.setAdapter(stockItemAdapter);
-        stockItemAdapter.updateAdapter(stockItemList);
+        stock_recycler.addOnItemTouchListener(new RecyclerItemClickListener(StockListActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Log("stock_recycler position : " + position);
+                showEditDialog(StockListActivity.this, stockItemAdapter.getStockItemList().get(position));
+            }
+        }));
         edt_search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -98,13 +104,6 @@ public class StockListActivity extends BaseActivity implements View.OnClickListe
 
             }
         });
-        stock_recycler.addOnItemTouchListener(new RecyclerItemClickListener(StockListActivity.this, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Log("stock_recycler position : " + position);
-                showEditDialog(StockListActivity.this, stockItemList.get(position));
-            }
-        }));
         if (sharedPreferencesManager.getBooleanValue("part_update")){
             reloadAllStocks();
         } else {
